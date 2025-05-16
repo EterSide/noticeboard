@@ -1,4 +1,4 @@
-package com.example.noticeboard.dto.entity;
+package com.example.noticeboard.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -29,10 +29,10 @@ public class Post {
     @JoinColumn(name = "userId")
     private User user;
 
-    @OneToMany(mappedBy = "image", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
-    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
 }

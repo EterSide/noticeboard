@@ -1,4 +1,4 @@
-package com.example.noticeboard.dto.entity;
+package com.example.noticeboard.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,7 +20,7 @@ public class User {
     private Long id;
 
     @Column(nullable = false)
-    private String loginId;
+    private String userId;
 
     @Column(nullable = false)
     private String nickname;
