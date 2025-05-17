@@ -18,6 +18,10 @@
 
     <div class="row align-items-md-stretch">
         <a th:href="@{/user/sign_up}" class="btn btn-lg btn-secondary fw-bold"> 회원 생성으로 이동하기 </a>
+        <div class="mb-3"></div>
+        <a th:href="@{/user/login}" class="btn btn-lg btn-success fw-bold"> 로그인으로 이동하기 </a>
+        <div class="mb-3"></div>
+        <a th:href="@{/post}" class="btn btn-lg btn-danger fw-bold"> 게시글 리스트로 이동하기 </a>
     </div>
     <div th:replace="fragments/footer :: footer"></div>
 </div>
