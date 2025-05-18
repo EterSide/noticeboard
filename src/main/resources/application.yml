@@ -4,6 +4,13 @@ spring:
     username: "root"
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  servlet:
+    multipart:
+      enabled: true
+      location: src/main/resources/static/uploads/
+      max-request-size: 300MB
+      max-file-size: 50MB
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,3 +20,6 @@ spring:
         show_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
     open-in-view: false
+
+
+

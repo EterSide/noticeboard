@@ -15,4 +15,8 @@ public class PostService {
         return postRepository.findAll();
     }
 
+    public void save(Post post) {
+        postRepository.save(post);
+    }
+
 }

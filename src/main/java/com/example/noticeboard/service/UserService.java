@@ -19,4 +19,8 @@ public class UserService {
         return userRepository.findByUserIdAndPassword(username, password);
     }
 
+    public void deleteUser(User user) {
+        userRepository.delete(user);
+    }
+
 }

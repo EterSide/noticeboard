@@ -5,10 +5,8 @@ import com.example.noticeboard.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -37,7 +35,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam String userId, @RequestParam String password, HttpSession session) {
+    public String login(@RequestParam String userId, @RequestParam String password, HttpSession session, Model model) {
 
         Optional<User> login = userService.login(userId, password);
 
@@ -48,6 +46,23 @@ public class UserController {
 
         return "login";
 
+    }
+
+    @GetMapping("/update")
+    public String update(HttpSession session, Model model) {
+
+        User user = (User) session.getAttribute("member");
+        model.addAttribute("user", user);
+
+        return "user_update";
+    }
+
+    @PostMapping("/update")
+    public String update(@ModelAttribute User user) {
+
+
+
+        return "redirect:/";
     }
 
 }
