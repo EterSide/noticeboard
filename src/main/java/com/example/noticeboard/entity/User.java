@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class User {
     private boolean gender;
 
     @Column(nullable = false)
+    @DateTimeFormat(pattern = "yyyy/MM/dd")
     private LocalDate birthday;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

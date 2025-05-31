@@ -15,7 +15,7 @@ import java.util.Optional;
 @RequestMapping("/user")
 public class UserController {
 
-    UserService userService;
+    private final UserService userService;
 
     @GetMapping("/sign_up")
     public String signUp() {

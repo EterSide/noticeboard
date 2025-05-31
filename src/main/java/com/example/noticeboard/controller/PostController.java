@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("post")
 public class PostController {
 
-    PostService postService;
+    private final PostService postService;
 
     public String postList(Model model) {
 
@@ -37,7 +37,7 @@ public class PostController {
         postService.save(post);
         model.addAttribute("post", post);
 
-        return "redirect:/post/" + post.getId();
+        return "redirect:/post/";
     }
 
 }
