@@ -57,49 +57,97 @@
 
                 <!-- Feature Cards -->
                 <div class="grid md:grid-cols-3 gap-6 mt-12">
-                    <!-- 회원가입 카드 -->
-                    <div class="card bg-base-100 shadow-2xl card-hover backdrop-blur-sm bg-white/95">
-                        <div class="card-body text-center">
-                            <div class="text-5xl mb-4">
-                                <i class="fas fa-user-plus feature-icon"></i>
+                    <!-- 로그인하지 않은 사용자용 카드들 -->
+                    <div th:if="${session.member == null}">
+                        <!-- 회원가입 카드 -->
+                        <div class="card bg-base-100 shadow-2xl card-hover backdrop-blur-sm bg-white/95">
+                            <div class="card-body text-center">
+                                <div class="text-5xl mb-4">
+                                    <i class="fas fa-user-plus feature-icon"></i>
+                                </div>
+                                <h2 class="card-title justify-center text-2xl font-bold mb-3">회원가입</h2>
+                                <p class="text-base-content/70 mb-6">
+                                    책방의 새로운 멤버가 되어<br>
+                                    다양한 서비스를 이용해보세요
+                                </p>
+                                <div class="card-actions justify-center">
+                                    <a th:href="@{/user/sign_up}" 
+                                       class="btn btn-primary btn-lg bg-gradient-to-r from-purple-600 to-blue-600 border-none text-white hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                                        <i class="fas fa-rocket mr-2"></i>
+                                        시작하기
+                                    </a>
+                                </div>
                             </div>
-                            <h2 class="card-title justify-center text-2xl font-bold mb-3">회원가입</h2>
-                            <p class="text-base-content/70 mb-6">
-                                책방의 새로운 멤버가 되어<br>
-                                다양한 서비스를 이용해보세요
-                            </p>
-                            <div class="card-actions justify-center">
-                                <a th:href="@{/user/sign_up}" 
-                                   class="btn btn-primary btn-lg bg-gradient-to-r from-purple-600 to-blue-600 border-none text-white hover:shadow-lg transform hover:scale-105 transition-all duration-200">
-                                    <i class="fas fa-rocket mr-2"></i>
-                                    시작하기
-                                </a>
+                        </div>
+
+                        <!-- 로그인 카드 -->
+                        <div class="card bg-base-100 shadow-2xl card-hover backdrop-blur-sm bg-white/95">
+                            <div class="card-body text-center">
+                                <div class="text-5xl mb-4">
+                                    <i class="fas fa-sign-in-alt feature-icon"></i>
+                                </div>
+                                <h2 class="card-title justify-center text-2xl font-bold mb-3">로그인</h2>
+                                <p class="text-base-content/70 mb-6">
+                                    이미 회원이신가요?<br>
+                                    로그인하여 서비스를 계속 이용하세요
+                                </p>
+                                <div class="card-actions justify-center">
+                                    <a th:href="@{/user/login}" 
+                                       class="btn btn-success btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                                        <i class="fas fa-door-open mr-2"></i>
+                                        로그인
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 로그인 카드 -->
-                    <div class="card bg-base-100 shadow-2xl card-hover backdrop-blur-sm bg-white/95">
-                        <div class="card-body text-center">
-                            <div class="text-5xl mb-4">
-                                <i class="fas fa-sign-in-alt feature-icon"></i>
+                    <!-- 로그인한 사용자용 카드들 -->
+                    <div th:if="${session.member != null}">
+                        <!-- 게시글 작성 카드 -->
+                        <div class="card bg-base-100 shadow-2xl card-hover backdrop-blur-sm bg-white/95">
+                            <div class="card-body text-center">
+                                <div class="text-5xl mb-4">
+                                    <i class="fas fa-pencil-alt feature-icon"></i>
+                                </div>
+                                <h2 class="card-title justify-center text-2xl font-bold mb-3">글쓰기</h2>
+                                <p class="text-base-content/70 mb-6">
+                                    새로운 게시글을 작성하여<br>
+                                    다른 사용자들과 소통해보세요
+                                </p>
+                                <div class="card-actions justify-center">
+                                    <a th:href="@{/post/add}" 
+                                       class="btn btn-primary btn-lg bg-gradient-to-r from-purple-600 to-blue-600 border-none text-white hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        글쓰기
+                                    </a>
+                                </div>
                             </div>
-                            <h2 class="card-title justify-center text-2xl font-bold mb-3">로그인</h2>
-                            <p class="text-base-content/70 mb-6">
-                                이미 회원이신가요?<br>
-                                로그인하여 서비스를 계속 이용하세요
-                            </p>
-                            <div class="card-actions justify-center">
-                                <a th:href="@{/user/login}" 
-                                   class="btn btn-success btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
-                                    <i class="fas fa-door-open mr-2"></i>
-                                    로그인
-                                </a>
+                        </div>
+
+                        <!-- 내 정보 수정 카드 -->
+                        <div class="card bg-base-100 shadow-2xl card-hover backdrop-blur-sm bg-white/95">
+                            <div class="card-body text-center">
+                                <div class="text-5xl mb-4">
+                                    <i class="fas fa-user-edit feature-icon"></i>
+                                </div>
+                                <h2 class="card-title justify-center text-2xl font-bold mb-3">내 정보</h2>
+                                <p class="text-base-content/70 mb-6">
+                                    <span th:text="${session.member?.nickname} ?: '사용자'">사용자</span>님의 정보를<br>
+                                    확인하고 수정해보세요
+                                </p>
+                                <div class="card-actions justify-center">
+                                    <a th:href="@{/user/update}" 
+                                       class="btn btn-success btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                                        <i class="fas fa-cog mr-2"></i>
+                                        정보 수정
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 게시글 리스트 카드 -->
+                    <!-- 게시판 카드 (항상 표시) -->
                     <div class="card bg-base-100 shadow-2xl card-hover backdrop-blur-sm bg-white/95">
                         <div class="card-body text-center">
                             <div class="text-5xl mb-4">

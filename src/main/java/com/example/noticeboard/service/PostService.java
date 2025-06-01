@@ -33,13 +33,10 @@ public class PostService {
         po.setTitle(post.getTitle());
         po.setContent(post.getContent());
 
-        // 책 장르 열거형
+
         po.setGenre(post.getGenre());
-        // 책 평점
         po.setRating(post.getRating());
-        // 공지글 관리
         po.setIsNotice(post.getIsNotice());
-        // 고정글 관리
         po.setIsPinned(post.getIsPinned());
         po.setCategory(post.getCategory());
         po.setBookTitle(post.getBookTitle());
