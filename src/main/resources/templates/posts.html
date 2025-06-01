@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml" data-theme="light">
+<meta charset="UTF-8">
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>BookMarket - 게시판</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .board-section {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <!-- Navigation from fragments -->
+    <div th:replace="fragments/header :: header"></div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Hero Section -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-white mb-4">
+                <i class="fas fa-clipboard-list mr-3"></i>
+                게시판
+            </h1>
+            <p class="text-xl text-white/80">다양한 이야기를 나누어보세요!</p>
+        </div>
+
+        <!-- Board Stats -->
+        <div class="max-w-6xl mx-auto mb-8">
+            <div class="stats shadow-2xl bg-base-100/95 backdrop-blur-sm w-full">
+                <div class="stat">
+                    <div class="stat-figure text-primary">
+                        <i class="fas fa-file-alt text-3xl"></i>
+                    </div>
+                    <div class="stat-title">전체 게시글</div>
+                    <div class="stat-value text-primary" th:text="${#lists.size(posts)} + '개'">0개</div>
+                    <div class="stat-desc">활발한 소통이 이루어지고 있어요</div>
+                </div>
+                
+                <div class="stat">
+                    <div class="stat-figure text-secondary">
+                        <i class="fas fa-eye text-3xl"></i>
+                    </div>
+                    <div class="stat-title">총 조회수</div>
+                    <div class="stat-value text-secondary">
+                        <span th:text="${#lists.isEmpty(posts) ? '0' : '다수'}">0</span>
+                    </div>
+                    <div class="stat-desc">많은 관심을 받고 있어요</div>
+                </div>
+                
+                <div class="stat">
+                    <div class="stat-figure text-accent">
+                        <i class="fas fa-heart text-3xl"></i>
+                    </div>
+                    <div class="stat-title">총 추천수</div>
+                    <div class="stat-value text-accent">
+                        <span th:text="${#lists.isEmpty(posts) ? '0' : '다수'}">0</span>
+                    </div>
+                    <div class="stat-desc">좋은 글들이 많아요</div>
+                </div>
+                
+                <div class="stat">
+                    <div class="stat-figure text-info">
+                        <i class="fas fa-book text-3xl"></i>
+                    </div>
+                    <div class="stat-title">책 리뷰</div>
+                    <div class="stat-value text-info">
+                        <span th:text="${#lists.isEmpty(posts) ? '0개' : (#lists.size(posts.?[category.name() == 'REVIEW']) + '개')}">0개</span>
+                    </div>
+                    <div class="stat-desc">생생한 독서 후기들</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Board Actions -->
+        <div class="max-w-6xl mx-auto mb-6">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="breadcrumbs text-sm text-white/80">
+                    <ul>
+                        <li><a href="/" class="hover:text-white"><i class="fas fa-home mr-1"></i>홈</a></li>
+                        <li><i class="fas fa-clipboard-list mr-1"></i>게시판</li>
+                    </ul>
+                </div>
+                <div class="flex gap-2">
+                    <button class="btn btn-ghost text-white hover:bg-white/20">
+                        <i class="fas fa-search mr-2"></i>검색
+                    </button>
+                    <a href="/post/add" class="btn btn-primary bg-gradient-to-r from-purple-600 to-blue-600 border-none text-white hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                        <i class="fas fa-plus mr-2"></i>글쓰기
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Posts Board -->
+        <div class="max-w-6xl mx-auto">
+            <div class="card bg-base-100 shadow-2xl board-section">
+                <div class="card-body p-0">
+                    <!-- Board Header -->
+                    <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 rounded-t-2xl">
+                        <h2 class="text-2xl font-bold flex items-center">
+                            <i class="fas fa-list mr-3"></i>
+                            게시글 목록
+                        </h2>
+                    </div>
+                    
+                    <!-- Posts List -->
+                    <div class="overflow-x-auto">
+                        <table class="table table-zebra w-full">
+                            <thead class="bg-base-200">
+                                <tr>
+                                    <th class="text-center w-16">번호</th>
+                                    <th class="text-center w-20">카테고리</th>
+                                    <th class="text-left">제목</th>
+                                    <th class="text-center w-32">작성자</th>
+                                    <th class="text-center w-16">조회</th>
+                                    <th class="text-center w-16">추천</th>
+                                    <th class="text-center w-32">작성일</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 게시글이 없는 경우 -->
+                                <tr th:if="${#lists.isEmpty(posts)}">
+                                    <td colspan="7" class="text-center py-12">
+                                        <div class="flex flex-col items-center">
+                                            <i class="fas fa-inbox text-4xl text-base-content/30 mb-4"></i>
+                                            <p class="text-lg text-base-content/60 mb-2">아직 게시글이 없습니다</p>
+                                            <p class="text-sm text-base-content/40 mb-4">첫 번째 게시글을 작성해보세요!</p>
+                                            <a href="/post/add" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-plus mr-2"></i>글쓰기
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- 게시글 목록 -->
+                                <tr th:each="post, postStat : ${posts}" class="hover:bg-base-200/50 transition-colors duration-200">
+                                    <td class="text-center font-medium">
+                                        <!-- 공지사항이면 NOTICE, 상단고정이면 번호 대신 📌 표시 -->
+                                        <span th:if="${post.isNotice}" class="badge badge-error badge-sm text-white">공지</span>
+                                        <span th:unless="${post.isNotice}">
+                                            <span th:if="${post.isPinned}" class="text-warning">📌</span>
+                                            <span th:unless="${post.isPinned}" th:text="${postStat.count}">1</span>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="badge badge-outline badge-sm" 
+                                             th:classappend="${post.category.name() == 'REVIEW'} ? 'badge-primary' : (${post.category.name() == 'CHAT'} ? 'badge-secondary' : 'badge-accent')"
+                                             th:text="${post.category.displayName}">카테고리</div>
+                                    </td>
+                                    <td class="text-left">
+                                        <div class="flex items-center">
+                                            <!-- 카테고리별 아이콘 -->
+                                            <i th:class="${post.category.name() == 'REVIEW'} ? 'fas fa-star text-yellow-500' : 
+                                                        (${post.category.name() == 'DISCUSSION'} ? 'fas fa-comments text-blue-500' : 
+                                                        (${post.category.name() == 'RECOMMENDATION'} ? 'fas fa-thumbs-up text-green-500' : 
+                                                        (${post.category.name() == 'QUESTION'} ? 'fas fa-question-circle text-purple-500' : 
+                                                        'fas fa-file-alt text-gray-500')))" 
+                                               class="mr-2 text-sm"></i>
+                                            
+                                            <div class="flex-1">
+                                                <a th:href="@{'/post/' + ${post.id}}" 
+                                                   class="link link-hover text-base font-medium flex items-center">
+                                                    <span th:text="${post.title}" class="truncate max-w-md">게시글 제목</span>
+                                                    
+                                                    <!-- 스포일러 주의 표시 -->
+                                                    <span th:if="${post.spoilerAlert}" 
+                                                          class="badge badge-warning badge-xs ml-2" title="스포일러 주의">⚠️</span>
+                                                    
+                                                    <!-- 책 제목이 있으면 표시 -->
+                                                    <span th:if="${post.bookTitle}" 
+                                                          class="badge badge-info badge-xs ml-2" 
+                                                          th:title="'도서: ' + ${post.bookTitle}">📚</span>
+                                                    
+                                                    <!-- 별점이 있으면 표시 (리뷰의 경우) -->
+                                                    <span th:if="${post.rating != null}" 
+                                                          class="ml-2 text-yellow-500 text-sm">
+                                                        <span th:each="star : ${#numbers.sequence(1, post.rating)}">⭐</span>
+                                                    </span>
+                                                </a>
+                                                
+                                                <!-- 게시글 정보 -->
+                                                <div class="text-xs text-base-content/60 mt-1">
+                                                    <!-- 책 제목과 저자 표시 -->
+                                                    <span th:if="${post.bookTitle}" class="font-medium">
+                                                        📖 <span th:text="${post.bookTitle}">책 제목</span>
+                                                        <span th:if="${post.author}" th:text="' - ' + ${post.author}"> - 저자</span>
+                                                        <span th:if="${post.genre}" class="badge badge-ghost badge-xs ml-2" 
+                                                              th:text="${post.genre.displayName}">장르</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="flex items-center justify-center">
+                                            <div class="avatar">
+                                                <div class="w-8 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center">
+                                                    <i class="fas fa-user text-white text-xs"></i>
+                                                </div>
+                                            </div>
+                                            <span class="ml-2 font-medium" th:text="${post.user?.nickname} ?: '익명'">작성자</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="text-sm" th:text="${post.viewCount}">0</div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="flex items-center justify-center">
+                                            <i class="fas fa-heart text-red-500 mr-1"></i>
+                                            <span class="text-sm" th:text="${post.likeCount}">0</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center text-sm text-base-content/70">
+                                        <div class="flex flex-col" th:if="${post.createdAt != null}">
+                                            <span th:text="${#temporals.format(post.createdAt, 'MM-dd')}">12-25</span>
+                                            <span class="text-xs" th:text="${#temporals.format(post.createdAt, 'HH:mm')}">12:34</span>
+                                        </div>
+                                        <div class="flex flex-col" th:unless="${post.createdAt != null}">
+                                            <span>방금 전</span>
+                                            <span class="text-xs">--:--</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination (추후 구현) -->
+                    <div class="flex justify-center p-6">
+                        <div class="join">
+                            <button class="join-item btn btn-sm">«</button>
+                            <button class="join-item btn btn-sm btn-active">1</button>
+                            <button class="join-item btn btn-sm">2</button>
+                            <button class="join-item btn btn-sm">3</button>
+                            <button class="join-item btn btn-sm">»</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Features Section -->
+        <div class="max-w-6xl mx-auto mt-8">
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- 인기 게시글 -->
+                <div class="card bg-base-100/90 backdrop-blur-sm shadow-xl">
+                    <div class="card-body">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-fire mr-2 text-orange-500"></i>
+                            인기 게시글
+                        </h3>
+                        <div class="space-y-3">
+                            <div th:each="post, postStat : ${posts}" th:if="${postStat.count <= 3}" 
+                                 class="flex items-start justify-between text-sm border-b border-base-300 pb-2">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-1">
+                                        <span class="badge badge-primary badge-xs mr-2" th:text="${postStat.count}">1</span>
+                                        <span class="badge badge-outline badge-xs mr-2" th:text="${post.category.displayName}">카테고리</span>
+                                    </div>
+                                    <a th:href="@{'/post/' + ${post.id}}" 
+                                       class="link link-hover font-medium truncate block" th:text="${post.title}">게시글 제목</a>
+                                    <div class="text-xs text-base-content/60 mt-1">
+                                        <span th:text="${post.user?.nickname} ?: '익명'">작성자</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end text-xs text-base-content/60 ml-2">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-heart text-red-500 mr-1"></i>
+                                        <span th:text="${post.likeCount}">0</span>
+                                    </div>
+                                    <div class="flex items-center mt-1">
+                                        <i class="fas fa-eye text-gray-500 mr-1"></i>
+                                        <span th:text="${post.viewCount}">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${#lists.isEmpty(posts)}" class="text-center text-base-content/60 py-4">
+                                아직 게시글이 없습니다
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 카테고리별 통계 -->
+                <div class="card bg-base-100/90 backdrop-blur-sm shadow-xl">
+                    <div class="card-body">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-chart-pie mr-2 text-blue-500"></i>
+                            카테고리별 글
+                        </h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="fas fa-star text-yellow-500 mr-2"></i>
+                                    <span>도서 리뷰</span>
+                                </div>
+                                <span class="badge badge-primary badge-sm" 
+                                      th:text="${#lists.isEmpty(posts) ? '0' : #lists.size(posts.?[category.name() == 'REVIEW'])}">0</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="fas fa-comments text-blue-500 mr-2"></i>
+                                    <span>독서 토론</span>
+                                </div>
+                                <span class="badge badge-info badge-sm" 
+                                      th:text="${#lists.isEmpty(posts) ? '0' : #lists.size(posts.?[category.name() == 'DISCUSSION'])}">0</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="fas fa-thumbs-up text-green-500 mr-2"></i>
+                                    <span>책 추천</span>
+                                </div>
+                                <span class="badge badge-success badge-sm" 
+                                      th:text="${#lists.isEmpty(posts) ? '0' : #lists.size(posts.?[category.name() == 'RECOMMENDATION'])}">0</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="fas fa-question-circle text-purple-500 mr-2"></i>
+                                    <span>독서 질문</span>
+                                </div>
+                                <span class="badge badge-secondary badge-sm" 
+                                      th:text="${#lists.isEmpty(posts) ? '0' : #lists.size(posts.?[category.name() == 'QUESTION'])}">0</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="fas fa-file-alt text-gray-500 mr-2"></i>
+                                    <span>자유 잡담</span>
+                                </div>
+                                <span class="badge badge-ghost badge-sm" 
+                                      th:text="${#lists.isEmpty(posts) ? '0' : #lists.size(posts.?[category.name() == 'CHAT'])}">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 최근 활동 -->
+                <div class="card bg-base-100/90 backdrop-blur-sm shadow-xl">
+                    <div class="card-body">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-clock mr-2 text-blue-500"></i>
+                            최근 활동
+                        </h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center">
+                                <i class="fas fa-plus text-green-500 mr-2"></i>
+                                <span>새 게시글 작성</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-comment text-purple-500 mr-2"></i>
+                                <span>댓글 작성</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-heart text-red-500 mr-2"></i>
+                                <span>좋아요 표시</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 게시판 규칙 -->
+                <div class="card bg-base-100/90 backdrop-blur-sm shadow-xl">
+                    <div class="card-body">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-info-circle mr-2 text-indigo-500"></i>
+                            게시판 규칙
+                        </h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-0.5"></i>
+                                <span>서로 존중하는 댓글 문화</span>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-0.5"></i>
+                                <span>건전한 내용의 게시글 작성</span>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-0.5"></i>
+                                <span>스팸성 글 금지</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer from fragments -->
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <script>
+        // 게시글 검색 기능 (추후 구현)
+        function searchPosts() {
+            // 검색 기능 구현
+        }
+        
+        // 페이지네이션 (추후 구현)
+        function goToPage(page) {
+            // 페이지네이션 구현
+        }
+        
+        // 실시간 업데이트 (WebSocket 등으로 추후 구현)
+        function refreshBoard() {
+            location.reload();
+        }
+        
+        // 주기적으로 게시판 새로고침 (옵션)
+        // setInterval(refreshBoard, 30000); // 30초마다
+    </script>
+</body>
+</html>
