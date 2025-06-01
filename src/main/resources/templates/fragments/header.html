@@ -1,18 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8">
   <title>Insert title here</title>
 </head>
 <body>
-<header class="pb-3 mb-4 border-bottom">
-  <a href="./main.html" class="d-flex align-items-center text-dark text-decoration-none">
-    <svg width="32" height="32" fill="currentColor" class="bi bi-house-fill" viewBox="0 0 16 16">
-      <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293z"/>
-      <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293z"/>
-    </svg>
-    <span class="fs-4"> Home </span>
-  </a>
+<header th:fragment="header">
+    <!-- Navigation -->
+    <div class="navbar bg-base-100/90 backdrop-blur-md shadow-lg">
+        <div class="navbar-start">
+            <a href="/" class="btn btn-ghost text-xl">
+                <i class="fas fa-home mr-2"></i>
+                <span class="font-bold">Home</span>
+            </a>
+        </div>
+        <div class="navbar-center">
+            <!-- 로그인하지 않은 상태 -->
+            <span th:if="${session.member == null}" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                책방에 오신걸 환영합니다.
+            </span>
+            
+            <!-- 로그인한 상태 -->
+            <span th:if="${session.member != null}" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                <span th:text="${session.member.nickname + '님 반갑습니다'}">닉네임님 반갑습니다</span>
+            </span>
+        </div>
+        <div class="navbar-end">
+            <div class="dropdown dropdown-end">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                    <i class="fas fa-user text-lg"></i>
+                </div>
+                
+                <!-- 로그인하지 않은 상태 -->
+                <ul th:if="${session.member == null}" tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a href="/user/login"><i class="fas fa-sign-in-alt mr-2"></i>로그인</a></li>
+                    <li><a href="/user/sign_up"><i class="fas fa-user-plus mr-2"></i>회원가입</a></li>
+                </ul>
+                
+                <!-- 로그인한 상태 -->
+                <ul th:if="${session.member != null}" tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <li class="menu-title">
+                        <span th:text="${session.member.nickname + '님'}">사용자님</span>
+                    </li>
+                    <li><a href="/user/update"><i class="fas fa-user-edit mr-2"></i>프로필 수정</a></li>
+                    <li><a href="/post"><i class="fas fa-list mr-2"></i>게시판</a></li>
+                    <li><hr class="my-1"></li>
+                    <li><a href="/user/logout"><i class="fas fa-sign-out-alt mr-2"></i>로그아웃</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </header>
 </body>
 </html>

@@ -1,80 +1,517 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.w3.org/1999/xhtml">
+<html xmlns:th="http://www.w3.org/1999/xhtml" data-theme="light">
 <meta charset="UTF-8">
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script type="text/javascript" src="./resources/js/validation.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <title>회원 등록</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .form-section {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+    </style>
 </head>
-<body>
-<div class="container py-4">
+<body class="gradient-bg min-h-screen">
+    <!-- Navigation from fragments -->
     <div th:replace="fragments/header :: header"></div>
 
-    <div class="p-5 mb-4 bg-body-tertiary rounded-3">
-        <div class="container-fluid py-5">
-            <h1 class="display-5 fw-bold"></h1>
-            <p class="col-md-8 fs-4">회원 가입</p>
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Hero Section -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-white mb-4">
+                <i class="fas fa-user-plus mr-3"></i>
+                회원가입
+            </h1>
+            <p class="text-xl text-white/80">새로운 여정을 시작해보세요!</p>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="max-w-4xl mx-auto">
+            <div class="card bg-base-100 shadow-2xl form-section">
+                <div class="card-body p-8">
+                    <form th:action="@{/user/sign_up}" method="post" class="space-y-6">
+                        
+                        <!-- User ID Section -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-lg font-semibold flex items-center">
+                                    <i class="fas fa-user mr-2 text-primary"></i>
+                                    아이디
+                                </span>
+                            </label>
+                            <div class="join">
+                                <input type="text" name="userId" class="input input-bordered join-item flex-1" 
+                                       id="userId" placeholder="사용하실 아이디를 입력하세요">
+                                <button type="button" onclick="checkDuplicateId()" 
+                                        class="btn btn-primary join-item">
+                                    <i class="fas fa-check mr-1"></i>중복 확인
+                                </button>
+                            </div>
+                            <label class="label">
+                                <span id="id-check-result" class="label-text-alt font-medium"></span>
+                            </label>
+                        </div>
+
+                        <!-- Password Section -->
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-lg font-semibold flex items-center">
+                                        <i class="fas fa-lock mr-2 text-primary"></i>
+                                        패스워드
+                                    </span>
+                                </label>
+                                <input type="password" name="password" class="input input-bordered" 
+                                       id="password" placeholder="안전한 패스워드를 입력하세요" required>
+                            </div>
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-lg font-semibold flex items-center">
+                                        <i class="fas fa-lock mr-2 text-primary"></i>
+                                        패스워드 확인
+                                    </span>
+                                </label>
+                                <input type="password" class="input input-bordered" 
+                                       id="confirmPassword" name="confirmPassword" 
+                                       placeholder="패스워드를 다시 입력하세요" required>
+                                <label class="label">
+                                    <span id="pw-match-result" class="label-text-alt font-medium"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Personal Info Section -->
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-lg font-semibold flex items-center">
+                                        <i class="fas fa-id-badge mr-2 text-primary"></i>
+                                        닉네임
+                                    </span>
+                                </label>
+                                <input type="text" name="nickname" class="input input-bordered" 
+                                       id="nickname" placeholder="사용하실 닉네임을 입력하세요" required>
+                            </div>
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-lg font-semibold flex items-center">
+                                        <i class="fas fa-signature mr-2 text-primary"></i>
+                                        이름
+                                    </span>
+                                </label>
+                                <input type="text" name="username" class="input input-bordered" 
+                                       placeholder="실명을 입력하세요" required>
+                            </div>
+                        </div>
+
+                        <!-- Email Section -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-lg font-semibold flex items-center">
+                                    <i class="fas fa-envelope mr-2 text-primary"></i>
+                                    이메일
+                                </span>
+                            </label>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <input type="text" id="userEmailId" class="input input-bordered flex-1 min-w-0" 
+                                       placeholder="이메일 아이디" required>
+                                <span class="text-lg font-bold">@</span>
+                                <select id="emailDomain" class="select select-bordered flex-1 min-w-0" 
+                                        onchange="handleDomainChange()" required>
+                                    <option value="">선택하세요</option>
+                                    <option value="gmail.com">gmail.com</option>
+                                    <option value="naver.com">naver.com</option>
+                                    <option value="daum.net">daum.net</option>
+                                    <option value="custom">직접입력</option>
+                                </select>
+                                <input type="text" id="customDomain" class="input input-bordered flex-1 min-w-0" 
+                                       placeholder="도메인 입력" style="display:none;">
+                            </div>
+                            <input type="hidden" name="email" id="finalEmail">
+                        </div>
+
+                        <!-- Phone Section -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-lg font-semibold flex items-center">
+                                    <i class="fas fa-phone mr-2 text-primary"></i>
+                                    전화번호
+                                </span>
+                            </label>
+                            <input type="text" id="phone" name="phone" class="input input-bordered" 
+                                   maxlength="13" placeholder="010-1234-5678" required>
+                        </div>
+
+                        <!-- Birthday Section -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-lg font-semibold flex items-center">
+                                    <i class="fas fa-birthday-cake mr-2 text-primary"></i>
+                                    생년월일
+                                </span>
+                            </label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <select id="birthYear" class="select select-bordered" required>
+                                    <option value="">년</option>
+                                </select>
+                                <select id="birthMonth" class="select select-bordered" required>
+                                    <option value="">월</option>
+                                </select>
+                                <select id="birthD-day" class="select select-bordered" required>
+                                    <option value="">일</option>
+                                </select>
+                            </div>
+                            <input type="hidden" name="birthday" id="birthday">
+                        </div>
+
+                        <!-- Gender Section -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-lg font-semibold flex items-center">
+                                    <i class="fas fa-venus-mars mr-2 text-primary"></i>
+                                    성별
+                                </span>
+                            </label>
+                            <div class="flex gap-6">
+                                <label class="label cursor-pointer">
+                                    <input type="radio" name="gender" value="M" class="radio radio-primary" />
+                                    <span class="label-text ml-2 text-lg">남성</span>
+                                </label>
+                                <label class="label cursor-pointer">
+                                    <input type="radio" name="gender" value="F" class="radio radio-primary" />
+                                    <span class="label-text ml-2 text-lg">여성</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-control mt-8">
+                            <button type="submit" class="btn btn-primary btn-lg text-white bg-gradient-to-r from-purple-600 to-blue-600 border-none hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                                <i class="fas fa-rocket mr-2"></i>
+                                회원가입 완료하기
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Link -->
+        <div class="text-center mt-8">
+            <div class="card bg-base-100/80 backdrop-blur-sm inline-block">
+                <div class="card-body py-4 px-6">
+                    <p class="text-lg">
+                        이미 계정이 있으신가요? 
+                        <a href="/user/login" class="link link-primary font-semibold hover:underline">
+                            <i class="fas fa-sign-in-alt mr-1"></i>로그인하기
+                        </a>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="row align-items-md-stretch">
-        <form th:action="@{/user/sign_up}" method="post" class="needs-validation" novalidate>
-            <div class="mb-3 row">
-                <label class="col-sm-2"> 아이디 </label>
-                <div class="col-sm-3">
-                    <input type="text" name="userId" class="form-control" id="userId">
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <label class="col-sm-2"> 패스워드 </label>
-                <div class="col-sm-3">
-                    <input type="password" name="password" class="form-control" id="password" >
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <label class="col-sm-2"> 닉네임 </label>
-                <div class="col-sm-3">
-                    <input type="text" name="nickname" class="form-control" id="nickname" >
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <label class="col-sm-2"> 이름 </label>
-                <div class="col-sm-3">
-                    <input type="text" name="username" class="username">
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <label class="col-sm-2"> 이메일 </label>
-                <div class="col-sm-3">
-                    <input type="text" name="email" class="form-control">
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <label class="col-sm-2"> 전화번호 </label>
-                <div class="col-sm-3">
-                    <input type="text" name="phone" class="form-control">
-                </div>
-            </div>
+    <!-- Footer from fragments -->
+    <div th:replace="fragments/footer :: footer"></div>
 
-            <div class="mb-3 row">
-                <label class="col-sm-2"> 생일 </label>
-                <div class="col-sm-3">
-                    <input type="text" name="birthday" class="form-control" >
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <label class="col-sm-2"></label>
-                <div class="col-sm-5">
-                    남 <input type="radio" name="gender" value="0" >
-                    여 <input type="radio" name="gender" value="1" >
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <input type="submit" value="고고싱">
-            </div>
-    </form>
-    </div>
-</div>
-<div th:replace="fragments/footer :: footer"></div>
+<script>
+    function checkDuplicateId() {
+        const userId = document.getElementById("userId").value;
+        const resultSpan = document.getElementById("id-check-result");
+
+        if (!userId) {
+            resultSpan.textContent = "아이디를 입력하세요.";
+            resultSpan.style.color = "red";
+            return;
+        }
+
+        fetch(`/user/check_id?userId=${encodeURIComponent(userId)}`)
+            .then(response => response.json())
+            .then(isDuplicate => {
+                if (isDuplicate) {
+                    resultSpan.textContent = "❌ 이미 사용 중인 아이디입니다.";
+                    resultSpan.style.color = "red";
+                } else {
+                    resultSpan.textContent = "✅ 사용 가능한 아이디입니다.";
+                    resultSpan.style.color = "green";
+                }
+            })
+            .catch(error => {
+                resultSpan.textContent = "❌ 오류 발생!";
+                resultSpan.style.color = "red";
+                console.error("중복 체크 에러:", error);
+            });
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+        const yearSelect = document.getElementById("birthYear");
+        const monthSelect = document.getElementById("birthMonth");
+        const daySelect = document.getElementById("birthD-day");
+
+        // 🗓️ 년도: 1900 ~ 올해까지
+        const currentYear = new Date().getFullYear();
+        for (let y = currentYear; y >= 1900; y--) {
+            const opt = document.createElement("option");
+            opt.value = y;
+            opt.textContent = y;
+            yearSelect.appendChild(opt);
+        }
+
+        // 🗓️ 월: January ~ December
+        const months = [
+            "01 - January", "02 - February", "03 - March", "04 - April",
+            "05 - May", "06 - June", "07 - July", "08 - August",
+            "09 - September", "10 - October", "11 - November", "12 - December"
+        ];
+        months.forEach((label, idx) => {
+            const opt = document.createElement("option");
+            opt.value = (idx + 1).toString().padStart(2, "0");
+            opt.textContent = label;
+            monthSelect.appendChild(opt);
+        });
+
+        // 🗓️ 일: 1~31까지 동적 조절
+        function updateDays() {
+            const year = parseInt(yearSelect.value);
+            const month = parseInt(monthSelect.value);
+            if (!year || !month) return;
+
+            const daysInMonth = new Date(year, month, 0).getDate();
+            daySelect.innerHTML = '<option value="">일</option>';
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const opt = document.createElement("option");
+                opt.value = d.toString().padStart(2, "0");
+                opt.textContent = d;
+                daySelect.appendChild(opt);
+            }
+        }
+
+        yearSelect.addEventListener("change", updateDays);
+        monthSelect.addEventListener("change", updateDays);
+
+        // 💾 form 제출 전에 숨은 필드에 yyyy-mm-dd 넣기
+        document.querySelector("form").addEventListener("submit", function (e) {
+            const y = yearSelect.value;
+            const m = monthSelect.value;
+            const d = daySelect.value;
+
+            document.getElementById("birthday").value = `${y}-${m}-${d}`;
+        });
+    });
+
+    let isIdChecked = false;
+
+    function checkDuplicateId() {
+        const userId = document.getElementById("userId").value;
+        const resultSpan = document.getElementById("id-check-result");
+
+        if (!userId) {
+            resultSpan.textContent = "❌ 아이디를 입력하세요.";
+            resultSpan.style.color = "red";
+            isIdChecked = false;
+            return;
+        }
+
+        fetch(`/user/check_id?userId=${encodeURIComponent(userId)}`)
+            .then(response => response.json())
+            .then(isDuplicate => {
+                if (isDuplicate) {
+                    resultSpan.textContent = "❌ 이미 사용 중인 아이디입니다.";
+                    resultSpan.style.color = "red";
+                    isIdChecked = false;
+                } else {
+                    resultSpan.textContent = "✅ 사용 가능한 아이디입니다.";
+                    resultSpan.style.color = "green";
+                    isIdChecked = true;
+                }
+            });
+    }
+
+    document.getElementById("userId").addEventListener("input", function () {
+        isIdChecked = false;
+        document.getElementById("id-check-result").textContent = "";
+    });
+
+    function handleDomainChange() {
+        const domainSelect = document.getElementById("emailDomain");
+        const customDomainInput = document.getElementById("customDomain");
+
+        if (domainSelect.value === "custom") {
+            customDomainInput.style.display = "block";
+        } else {
+            customDomainInput.style.display = "none";
+            customDomainInput.value = "";
+        }
+    }
+
+    document.querySelector("form").addEventListener("submit", function (e) {
+        e.preventDefault(); // 일단 무조건 막기
+
+        const get = id => document.getElementById(id);
+
+        // 🟢 1. 아이디 입력 확인 (중복확인 전에 이거부터 해야 자연스럽다)
+        if (!get("userId").value.trim()) {
+            alert("아이디를 입력해주세요.");
+            get("userId").focus();
+            return;
+        }
+
+        // 🟢 0. 아이디 중복 확인 여부
+        if (!isIdChecked) {
+            alert("아이디 중복 확인을 먼저 해주세요.");
+            get("userId").focus();
+            return;
+        }
+
+        // 🟢 2. 비밀번호
+        if (!get("password").value.trim()) {
+            alert("비밀번호를 입력해주세요.");
+            get("password").focus();
+            return;
+        }
+
+        // 🟢 3. 비밀번호 확인
+        if (!get("confirmPassword").value.trim()) {
+            alert("비밀번호 확인을 입력해주세요.");
+            get("confirmPassword").focus();
+            return;
+        }
+
+        if (get("password").value !== get("confirmPassword").value) {
+            alert("비밀번호가 일치하지 않습니다.");
+            get("confirmPassword").focus();
+            return;
+        }
+
+        // 🟢 4. 닉네임
+        if (!get("nickname").value.trim()) {
+            alert("닉네임을 입력해주세요.");
+            get("nickname").focus();
+            return;
+        }
+
+        // 🟢 5. 이름
+        const username = document.querySelector("input[name='username']");
+        if (!username.value.trim()) {
+            alert("이름을 입력해주세요.");
+            username.focus();
+            return;
+        }
+
+        // 🟢 6. 이메일 앞부분
+        const emailId = get("userEmailId")?.value.trim();
+        const emailDomain = get("emailDomain").value;
+        const customDomain = get("customDomain").value.trim();
+        let domain = emailDomain === "custom" ? customDomain : emailDomain;
+
+        if (!emailId) {
+            alert("이메일 아이디를 입력해주세요.");
+            get("userEmailId").focus();
+            return;
+        }
+
+        if (!domain) {
+            alert("이메일 도메인을 선택하거나 입력해주세요.");
+            if (emailDomain === "custom") {
+                get("customDomain").focus();
+            } else {
+                get("emailDomain").focus();
+            }
+            return;
+        }
+
+        get("finalEmail").value = `${emailId}@${domain}`;
+
+        // 🟢 7. 전화번호
+        if (!get("phone").value.trim()) {
+            alert("전화번호를 입력해주세요.");
+            get("phone").focus();
+            return;
+        }
+
+        // 🟢 8. 생일 (Month / Day / Year 드롭다운)
+        const year = get("birthYear").value;
+        const month = get("birthMonth").value;
+        const day = get("birthD-day").value;
+
+        if (!year) {
+            alert("생일의 년도를 선택해주세요.");
+            get("birthYear").focus();
+            return;
+        }
+        if (!month) {
+            alert("생일의 월을 선택해주세요.");
+            get("birthMonth").focus();
+            return;
+        }
+        if (!day) {
+            alert("생일의 일을 선택해주세요.");
+            get("birthD-day").focus();
+            return;
+        }
+
+        // 조합해서 hidden input에 저장
+        get("birthday").value = `${year}-${month}-${day}`;
+
+        // 🟢 9. 성별
+        const genderRadios = document.querySelectorAll("input[name='gender']");
+        const genderChecked = Array.from(genderRadios).some(r => r.checked);
+        if (!genderChecked) {
+            alert("성별을 선택해주세요.");
+            genderRadios[0].scrollIntoView({ behavior: "smooth" });
+            return;
+        }
+
+        // ✅ All passed
+        this.submit();
+    });
+
+    document.getElementById("phone").addEventListener("input", function (e) {
+        let value = e.target.value.replace(/\D/g, ""); // 숫자만 남김
+        if (value.length > 11) value = value.slice(0, 11);
+
+        let formatted = value;
+        if (value.length > 3 && value.length <= 7) {
+            formatted = value.slice(0, 3) + "-" + value.slice(3);
+        } else if (value.length > 7) {
+            formatted = value.slice(0, 3) + "-" + value.slice(3, 7) + "-" + value.slice(7);
+        }
+
+        e.target.value = formatted;
+    });
+
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirmPassword");
+    const resultSpan = document.getElementById("pw-match-result");
+
+    function checkPasswordMatch() {
+        if (!password.value || !confirmPassword.value) {
+            resultSpan.textContent = "";
+            return;
+        }
+
+        if (password.value === confirmPassword.value) {
+            resultSpan.textContent = "✅ 비밀번호가 일치합니다.";
+            resultSpan.style.color = "green";
+        } else {
+            resultSpan.textContent = "❌ 비밀번호가 일치하지 않습니다.";
+            resultSpan.style.color = "red";
+        }
+    }
+
+    password.addEventListener("input", checkPasswordMatch);
+    confirmPassword.addEventListener("input", checkPasswordMatch);
+</script>
 </body>
 </html>

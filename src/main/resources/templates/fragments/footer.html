@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Insert title here</title>
 </head>
 <body>
-<footer class="pt-3 mt-4 text-body-secondary border-top">
-    &copy; BookMarket
+<footer th:fragment="footer" class="footer footer-center p-4 bg-base-300/80 backdrop-blur-sm text-base-content mt-12">
+    <aside>
+        <p class="font-semibold">&copy; 2024 책방 - All rights reserved.</p>
+    </aside>
 </footer>
 </body>
 </html>

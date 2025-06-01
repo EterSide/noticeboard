@@ -39,10 +39,10 @@ public class User {
     private String phone;
 
     @Column(nullable = false)
-    private boolean gender;
+    private char gender;
 
     @Column(nullable = false)
-    @DateTimeFormat(pattern = "yyyy/MM/dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

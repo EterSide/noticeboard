@@ -1,82 +1,378 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.w3.org/1999/xhtml" data-theme="light">
 <meta charset="UTF-8">
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script type="text/javascript" src="./resources/js/validation.js"></script>
-    <title>회원 등록</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>BookMarket - 프로필 수정</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .form-section {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+    </style>
 </head>
-<body>
-<div class="container py-4">
+<body class="gradient-bg min-h-screen">
+    <!-- Navigation from fragments -->
     <div th:replace="fragments/header :: header"></div>
 
-    <div class="p-5 mb-4 bg-body-tertiary rounded-3">
-        <div class="container-fluid py-5">
-            <h1 class="display-5 fw-bold"></h1>
-            <p class="col-md-8 fs-4">회원 가입</p>
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Hero Section -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-white mb-4">
+                <i class="fas fa-user-edit mr-3"></i>
+                프로필 수정
+            </h1>
+            <p class="text-xl text-white/80">회원 정보를 업데이트하세요</p>
+        </div>
+
+        <!-- Profile Update Form -->
+        <div class="max-w-4xl mx-auto">
+            <div class="card bg-base-100 shadow-2xl form-section">
+                <div class="card-body p-8">
+                    <!-- Form Header -->
+                    <div class="text-center mb-8">
+                        <div class="avatar mb-4">
+                            <div class="w-24 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center">
+                                <i class="fas fa-user text-white text-3xl"></i>
+                            </div>
+                        </div>
+                        <h2 class="text-3xl font-bold mb-2">내 정보 수정</h2>
+                        <p class="text-base-content/70">변경하고 싶은 정보를 수정해주세요</p>
+                    </div>
+
+                    <form th:action="@{/user/update}" method="post" class="space-y-6" th:if="${user != null}">
+                        <!-- Personal Info Section -->
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <!-- User ID (읽기 전용) -->
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-lg font-semibold flex items-center">
+                                        <i class="fas fa-user mr-2 text-primary"></i>
+                                        아이디
+                                    </span>
+                                </label>
+                                <input type="text" name="userId" class="input input-bordered bg-gray-100" 
+                                       th:value="${user?.userId}" readonly>
+                                <label class="label">
+                                    <span class="label-text-alt text-gray-500">아이디는 변경할 수 없습니다</span>
+                                </label>
+                            </div>
+
+                            <!-- Nickname -->
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-lg font-semibold flex items-center">
+                                        <i class="fas fa-id-badge mr-2 text-primary"></i>
+                                        닉네임
+                                    </span>
+                                </label>
+                                <input type="text" name="nickname" class="input input-bordered" 
+                                       th:value="${user?.nickname}" placeholder="닉네임을 입력하세요" required>
+                            </div>
+                        </div>
+
+                        <!-- Password Section -->
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-lg font-semibold flex items-center">
+                                        <i class="fas fa-lock mr-2 text-primary"></i>
+                                        새 비밀번호
+                                    </span>
+                                </label>
+                                <input type="password" name="password" class="input input-bordered" 
+                                       id="password" placeholder="변경할 비밀번호를 입력하세요">
+                                <label class="label">
+                                    <span class="label-text-alt">비밀번호를 변경하지 않으려면 비워두세요</span>
+                                </label>
+                            </div>
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-lg font-semibold flex items-center">
+                                        <i class="fas fa-lock mr-2 text-primary"></i>
+                                        비밀번호 확인
+                                    </span>
+                                </label>
+                                <input type="password" class="input input-bordered" 
+                                       id="confirmPassword" placeholder="비밀번호를 다시 입력하세요">
+                                <label class="label">
+                                    <span id="pw-match-result" class="label-text-alt font-medium"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Name and Email Section -->
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-lg font-semibold flex items-center">
+                                        <i class="fas fa-signature mr-2 text-primary"></i>
+                                        이름
+                                    </span>
+                                </label>
+                                <input type="text" name="username" class="input input-bordered bg-gray-100" 
+                                       th:value="${user?.username}" readonly>
+                                <label class="label">
+                                    <span class="label-text-alt text-gray-500">이름은 변경할 수 없습니다</span>
+                                </label>
+                            </div>
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-lg font-semibold flex items-center">
+                                        <i class="fas fa-envelope mr-2 text-primary"></i>
+                                        이메일
+                                    </span>
+                                </label>
+                                <input type="email" name="email" class="input input-bordered" 
+                                       th:value="${user?.email}" placeholder="이메일을 입력하세요" required>
+                            </div>
+                        </div>
+
+                        <!-- Phone and Birthday Section -->
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-lg font-semibold flex items-center">
+                                        <i class="fas fa-phone mr-2 text-primary"></i>
+                                        전화번호
+                                    </span>
+                                </label>
+                                <input type="text" id="phone" name="phone" class="input input-bordered" 
+                                       th:value="${user?.phone}" maxlength="13" placeholder="010-1234-5678" required>
+                            </div>
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-lg font-semibold flex items-center">
+                                        <i class="fas fa-birthday-cake mr-2 text-primary"></i>
+                                        생년월일
+                                    </span>
+                                </label>
+                                <input type="date" name="birthday" class="input input-bordered" 
+                                       th:value="${user?.birthday}" required>
+                            </div>
+                        </div>
+
+                        <!-- Gender Section -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-lg font-semibold flex items-center">
+                                    <i class="fas fa-venus-mars mr-2 text-primary"></i>
+                                    성별
+                                </span>
+                            </label>
+                            <input type="text" name="gender" class="input input-bordered bg-gray-100" 
+                                   th:value="${user?.gender == 'M' ? '남성' : '여성'}" readonly>
+                            <input type="hidden" name="gender" th:value="${user?.gender}">
+                            <label class="label">
+                                <span class="label-text-alt text-gray-500">성별은 변경할 수 없습니다</span>
+                            </label>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                            <button type="submit" class="btn btn-primary btn-lg flex-1 text-white bg-gradient-to-r from-purple-600 to-blue-600 border-none hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                                <i class="fas fa-save mr-2"></i>
+                                변경사항 저장
+                            </button>
+                            <a href="/" class="btn btn-outline btn-lg flex-1 hover:bg-gradient-to-r hover:from-purple-600 hover:to-blue-600 hover:text-white hover:border-transparent transform hover:scale-105 transition-all duration-200">
+                                <i class="fas fa-times mr-2"></i>
+                                취소
+                            </a>
+                        </div>
+                    </form>
+                    
+                    <!-- 로그인하지 않은 경우 메시지 -->
+                    <div th:if="${user == null}" class="text-center">
+                        <div class="alert alert-warning shadow-lg">
+                            <div>
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>로그인이 필요한 페이지입니다.</span>
+                            </div>
+                        </div>
+                        <a href="/user/login" class="btn btn-primary mt-4">
+                            <i class="fas fa-sign-in-alt mr-2"></i>
+                            로그인하러 가기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Info Section -->
+        <div class="max-w-4xl mx-auto mt-8">
+            <div class="card bg-base-100/90 backdrop-blur-sm shadow-xl">
+                <div class="card-body">
+                    <h3 class="text-2xl font-bold text-center mb-6">
+                        <i class="fas fa-info-circle mr-3 text-blue-500"></i>
+                        개인정보 관리 안내
+                    </h3>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="text-center">
+                            <div class="text-3xl mb-3">
+                                <i class="fas fa-shield-alt text-green-500"></i>
+                            </div>
+                            <h4 class="font-semibold mb-2">보안</h4>
+                            <p class="text-sm text-base-content/70">개인정보는 안전하게 보호됩니다</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl mb-3">
+                                <i class="fas fa-edit text-purple-500"></i>
+                            </div>
+                            <h4 class="font-semibold mb-2">언제든 수정</h4>
+                            <p class="text-sm text-base-content/70">필요할 때 언제든 정보를 업데이트하세요</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl mb-3">
+                                <i class="fas fa-user-check text-indigo-500"></i>
+                            </div>
+                            <h4 class="font-semibold mb-2">계정 관리</h4>
+                            <p class="text-sm text-base-content/70">정확한 정보로 더 나은 서비스를 경험하세요</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <th:block>
-        <div class="row align-items-md-stretch">
-            <form th:action="@{/user/signup}" method="post" class="needs-validation" novalidate>
-                <div class="mb-3 row">
-                    <label class="col-sm-2"> 아이디 </label>
-                    <div class="col-sm-3">
-                        <input type="text" name="userId" class="form-control" id="userId">
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label class="col-sm-2"> 패스워드 </label>
-                    <div class="col-sm-3">
-                        <input type="password" name="password" class="form-control" id="password" >
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label class="col-sm-2"> 닉네임 </label>
-                    <div class="col-sm-3">
-                        <input type="text" name="nickname" class="form-control" id="nickname" >
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label class="col-sm-2"> 이름 </label>
-                    <div class="col-sm-3">
-                        <input type="text" name="username" class="username">
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label class="col-sm-2"> 이메일 </label>
-                    <div class="col-sm-3">
-                        <input type="text" name="email" class="form-control">
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label class="col-sm-2"> 전화번호 </label>
-                    <div class="col-sm-3">
-                        <input type="text" name="phone" class="form-control">
-                    </div>
-                </div>
 
-                <div class="mb-3 row">
-                    <label class="col-sm-2"> 생일 </label>
-                    <div class="col-sm-3">
-                        <input type="text" name="birthday" class="form-control" >
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label class="col-sm-2"></label>
-                    <div class="col-sm-5">
-                        <input type="radio" name="gender" value="남" >
-                        <input type="radio" name="gender" value="여" >
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <input type="submit" value="고고싱">
-                </div>
-            </form>
-        </div>
-    </th:block>
+    <!-- Footer from fragments -->
+    <div th:replace="fragments/footer :: footer"></div>
 
-</div>
-<div th:replace="fragments/footer :: footer"></div>
+<script>
+    // 비밀번호 일치 확인
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirmPassword");
+    const resultSpan = document.getElementById("pw-match-result");
+
+    function checkPasswordMatch() {
+        // 비밀번호 필드가 비어있으면 확인하지 않음
+        if (!password.value && !confirmPassword.value) {
+            resultSpan.textContent = "";
+            return;
+        }
+
+        // 비밀번호를 입력했는데 확인이 비어있는 경우
+        if (password.value && !confirmPassword.value) {
+            resultSpan.textContent = "";
+            return;
+        }
+
+        // 둘 다 입력된 경우에만 비교
+        if (password.value && confirmPassword.value) {
+            if (password.value === confirmPassword.value) {
+                resultSpan.textContent = "✅ 비밀번호가 일치합니다.";
+                resultSpan.style.color = "green";
+            } else {
+                resultSpan.textContent = "❌ 비밀번호가 일치하지 않습니다.";
+                resultSpan.style.color = "red";
+            }
+        }
+    }
+
+    if (password) password.addEventListener("input", checkPasswordMatch);
+    if (confirmPassword) confirmPassword.addEventListener("input", checkPasswordMatch);
+
+    // 전화번호 자동 포맷팅
+    const phoneInput = document.getElementById("phone");
+    if (phoneInput) {
+        // 포맷팅 함수
+        function formatPhone(value) {
+            // 숫자만 추출
+            let numbers = value.replace(/\D/g, "");
+            if (numbers.length > 11) numbers = numbers.slice(0, 11);
+
+            let formatted = numbers;
+            if (numbers.length > 3 && numbers.length <= 7) {
+                formatted = numbers.slice(0, 3) + "-" + numbers.slice(3);
+            } else if (numbers.length > 7) {
+                formatted = numbers.slice(0, 3) + "-" + numbers.slice(3, 7) + "-" + numbers.slice(7);
+            }
+            return formatted;
+        }
+
+        // 페이지 로드 시 기존 전화번호 포맷팅
+        if (phoneInput.value) {
+            phoneInput.value = formatPhone(phoneInput.value);
+        }
+
+        // 입력 시 실시간 포맷팅
+        phoneInput.addEventListener("input", function (e) {
+            e.target.value = formatPhone(e.target.value);
+        });
+    }
+
+    // 폼 제출 시 유효성 검사
+    document.querySelector("form").addEventListener("submit", function (e) {
+        e.preventDefault(); // 일단 무조건 막기
+
+        const get = id => document.getElementById(id);
+
+        // 🟢 1. 닉네임 확인
+        const nickname = document.querySelector("input[name='nickname']");
+        if (!nickname.value.trim()) {
+            alert("닉네임을 입력해주세요.");
+            nickname.focus();
+            return;
+        }
+
+        // 🟢 2. 이메일 확인
+        const email = document.querySelector("input[name='email']");
+        if (!email.value.trim()) {
+            alert("이메일을 입력해주세요.");
+            email.focus();
+            return;
+        }
+
+        // 이메일 형식 검사
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.value)) {
+            alert("올바른 이메일 형식을 입력해주세요.");
+            email.focus();
+            return;
+        }
+
+        // 🟢 3. 전화번호 확인
+        if (!get("phone").value.trim()) {
+            alert("전화번호를 입력해주세요.");
+            get("phone").focus();
+            return;
+        }
+
+        // 🟢 4. 비밀번호 확인 (비밀번호를 입력한 경우에만)
+        if (get("password").value) {
+            if (!get("confirmPassword").value) {
+                alert("비밀번호 확인을 입력해주세요.");
+                get("confirmPassword").focus();
+                return;
+            }
+
+            if (get("password").value !== get("confirmPassword").value) {
+                alert("비밀번호가 일치하지 않습니다.");
+                get("confirmPassword").focus();
+                return;
+            }
+        }
+
+        // 🟢 5. 생년월일 확인
+        const birthday = document.querySelector("input[name='birthday']");
+        if (!birthday.value) {
+            alert("생년월일을 선택해주세요.");
+            birthday.focus();
+            return;
+        }
+
+        // ✅ All passed
+        this.submit();
+    });
+</script>
 </body>
 </html>
