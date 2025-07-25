@@ -8,28 +8,126 @@
     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
 </head>
 <body>
-<h2 style="text-align: center;">Hello, TOAST UI Editor!</h2>
-<form action="@{post/add}">
+<h2 style="text-align: center;"> 게시글 등록 </h2>
+
+<!-- 폼 액션 경로 수정 및 method 추가 -->
+<form th:action="@{/post/add}" method="post">
     <div>
         <label for="title"> 제목 </label>
-        <input type="text" id="title" name="title">
+        <input type="text" id="title" name="title" required>
     </div>
-    <div id="content">
 
+    <!-- 에디터의 HTML 내용을 담을 숨겨진 필드 -->
+    <input type="hidden" id="content-input" name="content">
+
+    <!-- 에디터가 렌더링될 컨테이너 -->
+    <div id="content"></div>
+
+    <!-- 제출 버튼 추가 -->
+    <div style="margin-top: 20px; text-align: center;">
+        <button type="submit">게시글 등록</button>
+        <button type="button" onclick="history.back()">취소</button>
     </div>
 </form>
-<!-- 에디터를 적용할 요소 (컨테이너) -->
-
 
 <!-- TUI 에디터 JS CDN -->
 <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
 <script>
     const editor = new toastui.Editor({
         el: document.querySelector('#content'), // 에디터를 적용할 요소 (컨테이너)
-        height: '500px',                        // 에디터 영역의 높이 값 (OOOpx || auto)
+        height: '500px',                        // 에디터 영역의 높이 값
         initialEditType: 'wysiwyg',            // 최초로 보여줄 에디터 타입 (markdown || wysiwyg)
-        initialValue: '내용을 입력해 주세요.',     // 내용의 초기 값으로, 반드시 마크다운 문자열 형태여야 함
-        previewStyle: 'vertical'                // 마크다운 프리뷰 스타일 (tab || vertical)
+        initialValue: '내용을 입력해 주세요.',     // 내용의 초기 값
+        previewStyle: 'vertical',               // 마크다운 프리뷰 스타일 (tab || vertical)
+
+        // ===== 여기가 hook 설정 부분 =====
+        hooks: {
+            // 이미지가 업로드되었을 때 실행되는 hook
+            addImageBlobHook: function(blob, callback) {
+                // === 파일 유효성 검사 ===
+
+                // 1. 파일 크기 검사 (예: 5MB 제한)
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (blob.size > maxSize) {
+                    alert('이미지 크기는 5MB 이하만 업로드 가능합니다.');
+                    callback('', ''); // 빈 값으로 callback 호출하여 업로드 취소
+                    return;
+                }
+
+                // 2. 파일 타입 검사
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(blob.type)) {
+                    alert('JPG, PNG, GIF, WEBP 형식의 이미지만 업로드 가능합니다.');
+                    callback('', '');
+                    return;
+                }
+
+                // 3. 파일명 길이 검사
+                if (blob.name && blob.name.length > 100) {
+                    alert('파일명이 너무 깁니다. (100자 이하)');
+                    callback('', '');
+                    return;
+                }
+
+                console.log('이미지 유효성 검사 통과:', blob.name, blob.size, blob.type);
+                console.log('이미지 업로드 시작:', blob);
+
+                // FormData 객체를 생성하여 이미지 파일을 담음
+                const formData = new FormData();
+                formData.append('image', blob); // 'image'는 서버에서 받을 파라미터 이름
+
+                // 서버에 이미지 업로드 요청
+                fetch('/api/upload-image', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => {
+                        // 응답이 성공적이지 않으면 에러 발생
+                        if (!response.ok) {
+                            throw new Error('이미지 업로드 실패');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('이미지 업로드 성공:', data);
+
+                        // callback 함수를 호출하여 에디터에 이미지 URL을 삽입
+                        // callback(이미지URL, 대체텍스트)
+                        callback(data.imageUrl, data.fileName || '업로드된 이미지');
+                    })
+                    .catch(error => {
+                        console.error('이미지 업로드 에러:', error);
+                        alert('이미지 업로드에 실패했습니다.');
+
+                        // 업로드 실패 시 callback에 빈 문자열 전달
+                        callback('', '');
+                    });
+            }
+        }
+    });
+
+    // 폼 제출 시 에디터의 내용을 히든 필드에 설정
+    document.querySelector('form').addEventListener('submit', function(e) {
+        // 에디터의 HTML 내용을 가져와서 히든 필드에 설정
+        const htmlContent = editor.getHTML();
+        document.querySelector('#content-input').value = htmlContent;
+
+        console.log('제출할 내용:', htmlContent);
+
+        // 제목이 비어있으면 제출 중단
+        const title = document.querySelector('#title').value.trim();
+        if (!title) {
+            alert('제목을 입력해주세요.');
+            e.preventDefault();
+            return;
+        }
+
+        // 내용이 비어있으면 제출 중단
+        if (!htmlContent || htmlContent.trim() === '<p><br></p>' || htmlContent.trim() === '') {
+            alert('내용을 입력해주세요.');
+            e.preventDefault();
+            return;
+        }
     });
 </script>
 </body>

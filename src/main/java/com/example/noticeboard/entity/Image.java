@@ -22,6 +22,9 @@ public class Image {
     @Column(nullable = false)
     private String url;
 
+    @Column(nullable = false)
+    private int image_order;
+
     @ManyToOne
     @JoinColumn(name = "postId")
     private Post post;
