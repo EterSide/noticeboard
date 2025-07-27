@@ -9,9 +9,12 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class FileService {
@@ -121,15 +124,27 @@ public class FileService {
     /**
      * 파일 삭제 (게시글 삭제 시 사용)
      */
-    public boolean deleteImageFile(String imagePath) {
+    public boolean deleteImageFile(String imageUrl) {
         try {
-            // "/uploads/images/2024/07/uuid.jpg" -> "src/main/resources/static/uploads/images/2024/07/uuid.jpg"
-            String fullPath = uploadBasePath + imagePath.substring("/uploads/".length());
-            Path path = Paths.get(fullPath);
-            return Files.deleteIfExists(path);
+            String fullPath = uploadBasePath + imageUrl.substring("/uploads/".length());
+            return Files.deleteIfExists(Paths.get(fullPath));
         } catch (IOException e) {
-            System.err.println("파일 삭제 실패: " + imagePath + ", 오류: " + e.getMessage());
+            //log.error("파일 삭제 실패: {}", imageUrl, e);
             return false;
         }
     }
+
+    public List<String> extractImageSrcUrls(String htmlContent) {
+        List<String> imageUrls = new ArrayList<>();
+        Pattern pattern = Pattern.compile("<img[^>]*src=[\"']([^\"']+)[\"'][^>]*>", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(htmlContent);
+
+        while (matcher.find()) {
+            imageUrls.add(matcher.group(1));
+        }
+
+        return imageUrls;
+    }
+
+
 }

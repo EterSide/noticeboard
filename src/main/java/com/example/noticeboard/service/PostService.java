@@ -34,19 +34,19 @@ public class PostService {
         po.setContent(post.getContent());
 
 
-        po.setGenre(post.getGenre());
-        po.setRating(post.getRating());
-        po.setIsNotice(post.getIsNotice());
-        po.setIsPinned(post.getIsPinned());
-        po.setCategory(post.getCategory());
-        po.setBookTitle(post.getBookTitle());
-        po.setAuthor(post.getAuthor());
-        po.setSpoilerAlert(post.getSpoilerAlert());
+//        po.setGenre(post.getGenre());
+//        po.setRating(post.getRating());
+//        po.setIsNotice(post.getIsNotice());
+//        po.setIsPinned(post.getIsPinned());
+//        po.setCategory(post.getCategory());
+//        po.setBookTitle(post.getBookTitle());
+//        po.setAuthor(post.getAuthor());
+//        po.setSpoilerAlert(post.getSpoilerAlert());
         po.setCreatedAt(post.getCreatedAt());
         po.setUpdatedAt(post.getUpdatedAt());
         po.setViewCount(post.getViewCount());
         po.setLikeCount(post.getLikeCount());
-        po.setSpoilerAlert(post.getSpoilerAlert());
+//        po.setSpoilerAlert(post.getSpoilerAlert());
 
         return postRepository.save(po);
     }

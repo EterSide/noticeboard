@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,8 +25,12 @@ public class Image {
     @Column(nullable = false)
     private String url;
 
-    @Column(nullable = false)
-    private int image_order;
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+//    @Column(nullable = false)
+//    private int image_order;
 
     @ManyToOne
     @JoinColumn(name = "postId")

@@ -29,7 +29,7 @@
     <input type="hidden" id="content-input" name="content">
 
     <!-- 에디터가 렌더링될 컨테이너 -->
-    <div id="content"></div>
+    <div id="content" name="content-input"></div>
 
     <!-- 제출 버튼 추가 -->
     <div style="margin-top: 20px; text-align: center;">
@@ -38,7 +38,6 @@
     </div>
 </form>
 
-<!-- TUI 에디터 JS CDN -->
 <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
 <script>
     const editor = new toastui.Editor({
