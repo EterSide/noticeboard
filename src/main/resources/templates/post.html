@@ -2,142 +2,239 @@
 <html xmlns:th="http://www.thymeleaf.org" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>TOAST UI Editor 적용하기</title>
+    <title>책방 - 게시글 보기</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-    <!-- TUI 에디터 CSS CDN -->
+    <!-- TUI 에디터 CSS CDN (뷰어용) -->
     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .feature-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        /* 게시글 내용 스타일링 */
+        #post-content {
+            line-height: 1.8;
+            color: #374151;
+        }
+        #post-content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 1.5rem auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        #post-content h1, #post-content h2, #post-content h3 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        #post-content p {
+            margin-bottom: 1rem;
+        }
+        #post-content blockquote {
+            border-left: 4px solid #667eea;
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        #post-content code {
+            background: #f1f5f9;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        #post-content pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+    </style>
 </head>
-<style>
-    #content img {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        margin: 1rem 0; /* 가운데 정렬 */
-    }
-</style>
-<body>
-<h2 style="text-align: center;"> 게시글 등록 </h2>
+<body class="gradient-bg min-h-screen">
+    <!-- Navigation from fragments -->
+    <div th:replace="fragments/header :: header"></div>
 
-<!-- 폼 액션 경로 수정 및 method 추가 -->
-<form th:action="@{/post/add}" method="post">
-    <div>
-        <label for="title"> 제목 </label>
-        <input type="text" id="title" name="title" required>
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header Section -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-white mb-4">
+                <i class="fas fa-file-alt mr-3 feature-icon"></i>
+                <span class="bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
+                    게시글
+                </span>
+            </h1>
+            <div class="flex flex-wrap justify-center gap-2 text-white/80">
+                <div class="badge badge-outline badge-lg">
+                    <i class="fas fa-eye mr-1"></i>
+                    조회수 <span th:text="${viewCount ?: 0}">0</span>
+                </div>
+                <div class="badge badge-outline badge-lg">
+                    <i class="fas fa-calendar-alt mr-1"></i>
+                    <span th:text="${#temporals.format(createdAt, 'yyyy-MM-dd')}">2024-01-01</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Card -->
+        <div class="card bg-base-100 shadow-2xl backdrop-blur-sm bg-white/95 mb-8">
+            <div class="card-body p-8">
+                <!-- Post Header -->
+                <div class="border-b border-gray-200 pb-6 mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4" th:text="${title}">게시글 제목</h2>
+                    
+                    <!-- Post Meta Info -->
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex items-center gap-4 text-gray-600">
+                            <div class="flex items-center gap-2">
+                                <div class="avatar placeholder">
+                                    <div class="bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full w-10">
+                                        <span class="text-sm" th:text="${user?.nickname?.substring(0,1) ?: 'U'}">U</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold" th:text="${user?.nickname ?: '익명'}">작성자</div>
+                                    <div class="text-sm text-gray-500" th:text="${#temporals.format(createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="flex gap-2">
+                            <button class="btn btn-sm btn-outline hover:btn-primary">
+                                <i class="fas fa-heart mr-1"></i>
+                                좋아요
+                            </button>
+                            <button class="btn btn-sm btn-outline hover:btn-secondary">
+                                <i class="fas fa-share mr-1"></i>
+                                공유
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post Content -->
+                <div class="prose prose-lg max-w-none">
+                    <div id="post-content" th:utext="${content}">
+                        게시글 내용이 여기에 표시됩니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="card bg-base-100 shadow-xl backdrop-blur-sm bg-white/95 mb-8">
+            <div class="card-body p-8">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-comments mr-2 text-purple-600"></i>
+                    댓글 <span class="text-lg text-gray-500">(0)</span>
+                </h3>
+                
+                <!-- Comment Form -->
+                <form action="#" th:action="@{/comment}" method="post">
+                    <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">댓글 작성</span>
+                            </label>
+                            <textarea class="textarea textarea-bordered h-24 resize-none" placeholder="댓글을 입력해주세요..." name="comment"></textarea>
+                        </div>
+                        <div class="flex justify-end mt-4">
+                            <button class="btn btn-primary btn-sm bg-gradient-to-r from-purple-600 to-blue-600 border-none">
+                                <i class="fas fa-paper-plane mr-1"></i>
+                                댓글 등록
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Comments List -->
+                <div class="space-y-4">
+                    <!-- Sample Comment (will be replaced with actual comments) -->
+                    <div class="border-b border-gray-100 pb-4 last:border-b-0">
+                        <div class="flex items-start gap-3">
+                            <div class="avatar placeholder">
+                                <div class="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-full w-8">
+                                    <span class="text-xs">U</span>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="font-semibold text-gray-700">사용자닉네임</span>
+                                    <span class="text-xs text-gray-500">2024-01-01 12:00</span>
+                                </div>
+                                <p class="text-gray-600 text-sm">
+                                    좋은 글 감사합니다! 많은 도움이 되었어요.
+                                </p>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-primary">
+                                        <i class="fas fa-thumbs-up mr-1"></i>
+                                        좋아요
+                                    </button>
+                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-secondary">
+                                        <i class="fas fa-reply mr-1"></i>
+                                        답글
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Empty Comments State -->
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-comment text-4xl mb-3 text-gray-300"></i>
+                    <p>아직 댓글이 없습니다.<br>첫 번째 댓글을 작성해보세요!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex flex-wrap justify-between gap-4">
+            <button onclick="history.back()" 
+                    class="btn btn-outline btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                <i class="fas fa-arrow-left mr-2"></i>
+                목록으로
+            </button>
+            
+            <div class="flex gap-2">
+                <button class="btn btn-warning btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                    <i class="fas fa-edit mr-2"></i>
+                    수정
+                </button>
+                <button class="btn btn-error btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                    <i class="fas fa-trash mr-2"></i>
+                    삭제
+                </button>
+            </div>
+        </div>
     </div>
 
-    <!-- 에디터의 HTML 내용을 담을 숨겨진 필드 -->
-    <input type="hidden" id="content-input" name="content">
-
-    <!-- 에디터가 렌더링될 컨테이너 -->
-    <div id="content" name="content-input"></div>
-
-    <!-- 제출 버튼 추가 -->
-    <div style="margin-top: 20px; text-align: center;">
-        <button type="submit">게시글 등록</button>
-        <button type="button" onclick="history.back()">취소</button>
-    </div>
-</form>
-
-<script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
-<script>
-    const editor = new toastui.Editor({
-        el: document.querySelector('#content'), // 에디터를 적용할 요소 (컨테이너)
-        height: '500px',                        // 에디터 영역의 높이 값
-        initialEditType: 'wysiwyg',            // 최초로 보여줄 에디터 타입 (markdown || wysiwyg)
-        initialValue: '내용을 입력해 주세요.',     // 내용의 초기 값
-        previewStyle: 'vertical',               // 마크다운 프리뷰 스타일 (tab || vertical)
-
-        // ===== 여기가 hook 설정 부분 =====
-        hooks: {
-            // 이미지가 업로드되었을 때 실행되는 hook
-            addImageBlobHook: function(blob, callback) {
-                // === 파일 유효성 검사 ===
-
-                // 1. 파일 크기 검사 (예: 5MB 제한)
-                const maxSize = 5 * 1024 * 1024; // 5MB
-                if (blob.size > maxSize) {
-                    alert('이미지 크기는 5MB 이하만 업로드 가능합니다.');
-                    callback('', ''); // 빈 값으로 callback 호출하여 업로드 취소
-                    return;
-                }
-
-                // 2. 파일 타입 검사
-                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-                if (!allowedTypes.includes(blob.type)) {
-                    alert('JPG, PNG, GIF, WEBP 형식의 이미지만 업로드 가능합니다.');
-                    callback('', '');
-                    return;
-                }
-
-                // 3. 파일명 길이 검사
-                if (blob.name && blob.name.length > 100) {
-                    alert('파일명이 너무 깁니다. (100자 이하)');
-                    callback('', '');
-                    return;
-                }
-
-                console.log('이미지 유효성 검사 통과:', blob.name, blob.size, blob.type);
-                console.log('이미지 업로드 시작:', blob);
-
-                // FormData 객체를 생성하여 이미지 파일을 담음
-                const formData = new FormData();
-                formData.append('image', blob); // 'image'는 서버에서 받을 파라미터 이름
-
-                // 서버에 이미지 업로드 요청
-                fetch('/api/upload-image', {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(response => {
-                        // 응답이 성공적이지 않으면 에러 발생
-                        if (!response.ok) {
-                            throw new Error('이미지 업로드 실패');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('이미지 업로드 성공:', data);
-
-                        // callback 함수를 호출하여 에디터에 이미지 URL을 삽입
-                        // callback(이미지URL, 대체텍스트)
-                        callback(data.imageUrl, data.fileName || '업로드된 이미지');
-                    })
-                    .catch(error => {
-                        console.error('이미지 업로드 에러:', error);
-                        alert('이미지 업로드에 실패했습니다.');
-
-                        // 업로드 실패 시 callback에 빈 문자열 전달
-                        callback('', '');
-                    });
-            }
-        }
-    });
-
-
-
-    // 폼 제출 시 에디터의 내용을 히든 필드에 설정
-    document.querySelector('form').addEventListener('submit', function(e) {
-        // 에디터의 HTML 내용을 가져와서 히든 필드에 설정
-        const htmlContent = editor.getHTML();
-        document.querySelector('#content-input').value = htmlContent;
-
-        console.log('제출할 내용:', htmlContent);
-
-        // 제목이 비어있으면 제출 중단
-        const title = document.querySelector('#title').value.trim();
-        if (!title) {
-            alert('제목을 입력해주세요.');
-            e.preventDefault();
-            return;
-        }
-
-        // 내용이 비어있으면 제출 중단
-        if (!htmlContent || htmlContent.trim() === '<p><br></p>' || htmlContent.trim() === '') {
-            alert('내용을 입력해주세요.');
-            e.preventDefault();
-            return;
-        }
-    });
-</script>
+    <!-- Footer from fragments -->
+    <div th:replace="fragments/footer :: footer"></div>
 </body>
 </html>
