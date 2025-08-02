@@ -2,15 +2,15 @@ package com.example.noticeboard.controller;
 
 import com.example.noticeboard.entity.Image;
 import com.example.noticeboard.entity.Post;
+import com.example.noticeboard.entity.dto.PostDto;
 import com.example.noticeboard.service.FileService;
 import com.example.noticeboard.service.ImageService;
 import com.example.noticeboard.service.PostService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.hibernate.Session;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,9 +27,9 @@ public class PostController {
     @GetMapping("posts")
     public String posts(Model model) {
 
-        List<Post> allPosts = postService.getAllPosts();
+        List<PostDto> postDtos = postService.getAllPosts();
 
-        model.addAttribute("posts", allPosts);
+        model.addAttribute("posts", postDtos);
 
         return "posts";
 
@@ -65,13 +65,16 @@ public class PostController {
     }
 
     @GetMapping("{id}")
-    public String post(Model model, @PathVariable Long id) {
+    public String post(Model model, @PathVariable Long id, Session session ) {
 
         Optional<Post> postById = postService.getPostById(id);
 
         if(postById.isPresent()) {
+            postById.get().setViewCount(postById.get().getViewCount() + 1);
+            postService.save(postById.get());
             model.addAttribute("title", postById.get().getTitle());
             model.addAttribute("content", postById.get().getContent());
+
             return "post";
         }
 

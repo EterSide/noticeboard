@@ -155,16 +155,16 @@
                 </h3>
                 
                 <!-- Comment Form -->
-                <form action="#" th:action="@{/comment}" method="post">
+                <form th:action="@{/comment}" method="post">
                     <div class="bg-gray-50 rounded-lg p-6 mb-6">
                         <div class="form-control">
                             <label class="label">
                                 <span class="label-text font-semibold">댓글 작성</span>
                             </label>
-                            <textarea class="textarea textarea-bordered h-24 resize-none" placeholder="댓글을 입력해주세요..." name="comment"></textarea>
+                            <textarea class="textarea textarea-bordered h-24 resize-none" placeholder="댓글을 입력해주세요..." name="content"></textarea>
                         </div>
                         <div class="flex justify-end mt-4">
-                            <button class="btn btn-primary btn-sm bg-gradient-to-r from-purple-600 to-blue-600 border-none">
+                            <button type="submit" class="btn btn-primary btn-sm bg-gradient-to-r from-purple-600 to-blue-600 border-none">
                                 <i class="fas fa-paper-plane mr-1"></i>
                                 댓글 등록
                             </button>
@@ -173,37 +173,66 @@
                 </form>
 
                 <!-- Comments List -->
-                <div class="space-y-4">
-                    <!-- Sample Comment (will be replaced with actual comments) -->
-                    <div class="border-b border-gray-100 pb-4 last:border-b-0">
-                        <div class="flex items-start gap-3">
-                            <div class="avatar placeholder">
-                                <div class="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-full w-8">
-                                    <span class="text-xs">U</span>
-                                </div>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="font-semibold text-gray-700">사용자닉네임</span>
-                                    <span class="text-xs text-gray-500">2024-01-01 12:00</span>
-                                </div>
-                                <p class="text-gray-600 text-sm">
-                                    좋은 글 감사합니다! 많은 도움이 되었어요.
-                                </p>
-                                <div class="flex items-center gap-2 mt-2">
-                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-primary">
-                                        <i class="fas fa-thumbs-up mr-1"></i>
-                                        좋아요
-                                    </button>
-                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-secondary">
-                                        <i class="fas fa-reply mr-1"></i>
-                                        답글
-                                    </button>
-                                </div>
-                            </div>
+                <!-- 📌 댓글 목록 루프: 최상위 댓글만 반복 -->
+                <div th:each="comment : ${comments}" class="comment-block" style="margin-bottom: 20px;">
+
+                    <!-- ① 댓글 작성자 -->
+                    <p><strong th:text="${comment.user?.nickname ?: 'ㅇㅇ'}">작성자</strong></p>
+
+                    <!-- ② 댓글 내용 -->
+                    <p th:text="${comment.displayContent}">댓글 내용</p>
+
+                    <!-- ③ 대댓글 작성 폼 토글 버튼 -->
+                    <button type="button" th:attr="onclick='toggleReplyForm(' + ${comment.id} + ')'">답글</button>
+
+                    <!-- ④ 대댓글 작성 폼 (기본은 숨김 상태) -->
+                    <form th:id="'reply-form-' + ${comment.id}" th:action="@{/comments/reply}" method="post" style="display: none; margin-top: 10px;">
+                        <input type="hidden" name="postId" th:value="${post.id}" />
+                        <input type="hidden" name="parentId" th:value="${comment.id}" />
+                        <textarea name="content" placeholder="답글을 입력하세요" rows="2" style="width: 100%;"></textarea>
+                        <button type="submit">답글 등록</button>
+                    </form>
+
+                    <!-- ⑤ 대댓글 목록 루프 -->
+                    <div th:if="${#lists.size(comment.replies) > 0}" style="margin-left: 20px; margin-top: 10px;">
+                        <div th:each="reply : ${comment.replies}" class="reply-block" style="border-left: 2px solid #ccc; padding-left: 10px; margin-bottom: 10px;">
+                            <p><strong th:text="${reply.user?.nickname ?: 'ㅇㅇ'}">작성자</strong></p>
+                            <p th:text="${reply.displayContent}">대댓글 내용</p>
                         </div>
                     </div>
+
                 </div>
+<!--                <div class="space-y-4">-->
+<!--                    &lt;!&ndash; Sample Comment (will be replaced with actual comments) &ndash;&gt;-->
+<!--                    <div class="border-b border-gray-100 pb-4 last:border-b-0">-->
+<!--                        <div class="flex items-start gap-3">-->
+<!--                            <div class="avatar placeholder">-->
+<!--                                <div class="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-full w-8">-->
+<!--                                    <span class="text-xs">U</span>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="flex-1" th:each="comment : ${comments}">-->
+<!--                                <div class="flex items-center gap-2 mb-1">-->
+<!--                                    <span class="font-semibold text-gray-700" th:text="${comment.userId}">사용자닉네임</span>-->
+<!--                                    <span class="text-xs text-gray-500" th:text="${comment.creatAt}">2024-01-01 12:00</span>-->
+<!--                                </div>-->
+<!--                                <p class="text-gray-600 text-sm" th:text="${comment.content}">-->
+<!--                                    좋은 글 감사합니다! 많은 도움이 되었어요.-->
+<!--                                </p>-->
+<!--                                <div class="flex items-center gap-2 mt-2">-->
+<!--                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-primary">-->
+<!--                                        <i class="fas fa-thumbs-up mr-1"></i>-->
+<!--                                        좋아요-->
+<!--                                    </button>-->
+<!--                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-secondary">-->
+<!--                                        <i class="fas fa-reply mr-1"></i>-->
+<!--                                        답글-->
+<!--                                    </button>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
                 
                 <!-- Empty Comments State -->
                 <div class="text-center py-8 text-gray-500">
@@ -220,16 +249,17 @@
                 <i class="fas fa-arrow-left mr-2"></i>
                 목록으로
             </button>
-            
-            <div class="flex gap-2">
-                <button class="btn btn-warning btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
-                    <i class="fas fa-edit mr-2"></i>
-                    수정
-                </button>
-                <button class="btn btn-error btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
-                    <i class="fas fa-trash mr-2"></i>
-                    삭제
-                </button>
+            <div th:if="${!session.isEmpty()}">
+                <div class="flex gap-2">
+                    <button class="btn btn-warning btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                        <i class="fas fa-edit mr-2"></i>
+                        수정
+                    </button>
+                    <button class="btn btn-error btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                        <i class="fas fa-trash mr-2"></i>
+                        삭제
+                    </button>
+                </div>
             </div>
         </div>
     </div>

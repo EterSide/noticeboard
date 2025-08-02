@@ -1,11 +1,13 @@
 package com.example.noticeboard.service;
 
 import com.example.noticeboard.entity.Post;
+import com.example.noticeboard.entity.dto.PostDto;
 import com.example.noticeboard.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,8 +17,31 @@ public class PostService {
 
     private final PostRepository postRepository;
 
-    public List<Post> getAllPosts() {
-        return postRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<PostDto> getAllPosts() {
+
+        List<Post> posts = postRepository.findAll();
+        List<PostDto> postDtos = new ArrayList<>();
+
+        for(Post post : posts) {
+            PostDto postDto = new PostDto();
+            postDto.setId(post.getId());
+            postDto.setTitle(post.getTitle());
+            if(post.getUser() == null) {
+                postDto.setNickname("ㅇㅇ");
+            } else {
+                postDto.setNickname(post.getUser().getNickname());
+            }
+
+            postDto.setCreatedAt(post.getCreatedAt());
+            postDto.setViewCount(post.getViewCount());
+            postDto.setComments(post.getComments().size());
+
+            postDtos.add(postDto);
+        }
+
+
+        return postDtos;
     }
 
     public Optional<Post> getPostById(Long id) {

@@ -132,8 +132,8 @@
                                                 게시글 제목
                                             </a>
                                             
-                                            <!-- 댓글 수 (향후 구현 예정) -->
-                                            <!-- <span class="text-xs text-orange-500 ml-2">[0]</span> -->
+
+                                             <span class="text-xs text-orange-500 ml-2" th:text="${post.getComments()}">[0]</span>
                                             
                                             <!-- 새글 표시 (24시간 이내) -->
                                             <span th:if="${#temporals.format(post.createdAt, 'yyyy-MM-dd').equals(#temporals.format(#temporals.createNow(), 'yyyy-MM-dd'))}" 
@@ -147,10 +147,10 @@
                                     <div class="flex items-center justify-center gap-2">
                                         <div class="avatar placeholder">
                                             <div class="bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full w-6 h-6">
-                                                <span class="text-xs" th:text="${post.user?.nickname?.substring(0,1) ?: 'U'}">U</span>
+                                                <span class="text-xs" th:text="${post.nickname?.substring(0,1) ?: 'U'}">U</span>
                                             </div>
                                         </div>
-                                        <span class="text-sm font-medium hidden sm:inline" th:text="${post.user?.nickname ?: '익명'}">닉네임</span>
+                                        <span class="text-sm font-medium hidden sm:inline" th:text="${post.nickname ?: '익명'}">닉네임</span>
                                     </div>
                                 </td>
                                 
@@ -166,7 +166,7 @@
                                 <td class="text-center">
                                     <div class="flex flex-col items-center">
                                         <i class="fas fa-eye text-gray-400 text-xs mb-1"></i>
-                                        <span class="text-sm font-medium" th:text="${post.viewCount ?: 0}">0</span>
+                                        <span class="text-sm font-medium" th:text="${post.viewCount}">0</span>
                                     </div>
                                 </td>
                             </tr>
