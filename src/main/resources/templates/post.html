@@ -108,6 +108,7 @@
                     <h2 class="text-3xl font-bold text-gray-800 mb-4" th:text="${title}">게시글 제목</h2>
                     
                     <!-- Post Meta Info -->
+
                     <div class="flex flex-wrap items-center justify-between gap-4">
                         <div class="flex items-center gap-4 text-gray-600">
                             <div class="flex items-center gap-2">
@@ -151,17 +152,19 @@
             <div class="card-body p-8">
                 <h3 class="text-2xl font-bold text-gray-800 mb-6">
                     <i class="fas fa-comments mr-2 text-purple-600"></i>
-                    댓글 <span class="text-lg text-gray-500">(0)</span>
+                    댓글 <span class="text-lg text-gray-500" th:text="${count}">(0)</span>
                 </h3>
                 
                 <!-- Comment Form -->
-                <form action="#" th:action="@{/comment}" method="post">
+                <form action="#" th:action="@{/comment/add}" method="post">
+                    <input type="hidden" th:value="${postId}" name="postId">
+                    <input type="hidden" th:value="0" name="parentId">
                     <div class="bg-gray-50 rounded-lg p-6 mb-6">
                         <div class="form-control">
                             <label class="label">
                                 <span class="label-text font-semibold">댓글 작성</span>
                             </label>
-                            <textarea class="textarea textarea-bordered h-24 resize-none" placeholder="댓글을 입력해주세요..." name="comment"></textarea>
+                            <textarea class="textarea textarea-bordered h-24 resize-none" placeholder="댓글을 입력해주세요..." name="content"></textarea>
                         </div>
                         <div class="flex justify-end mt-4">
                             <button class="btn btn-primary btn-sm bg-gradient-to-r from-purple-600 to-blue-600 border-none">
@@ -175,38 +178,43 @@
                 <!-- Comments List -->
                 <div class="space-y-4">
                     <!-- Sample Comment (will be replaced with actual comments) -->
-                    <div class="border-b border-gray-100 pb-4 last:border-b-0">
-                        <div class="flex items-start gap-3">
-                            <div class="avatar placeholder">
-                                <div class="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-full w-8">
-                                    <span class="text-xs">U</span>
+                    <th:block th:if="${comments}" th:each="comment : ${comments}">
+                        <div class="border-b border-gray-100 pb-4 last:border-b-0">
+                            <div class="flex items-start gap-3">
+                                <div class="avatar placeholder">
+                                    <div class="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-full w-8">
+                                        <span class="text-xs">U</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="font-semibold text-gray-700">사용자닉네임</span>
-                                    <span class="text-xs text-gray-500">2024-01-01 12:00</span>
-                                </div>
-                                <p class="text-gray-600 text-sm">
-                                    좋은 글 감사합니다! 많은 도움이 되었어요.
-                                </p>
-                                <div class="flex items-center gap-2 mt-2">
-                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-primary">
-                                        <i class="fas fa-thumbs-up mr-1"></i>
-                                        좋아요
-                                    </button>
-                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-secondary">
-                                        <i class="fas fa-reply mr-1"></i>
-                                        답글
-                                    </button>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="font-semibold text-gray-700" th:text="${comment.user != null ? comment.user.nickname : '익명'}">사용자닉네임</span>
+                                        <span class="text-xs text-gray-500" th:text="${comment.createdAt}">2024-01-01 12:00</span>
+                                    </div>
+                                    <p class="text-gray-600 text-sm" th:text="${comment.content}">
+                                        좋은 글 감사합니다! 많은 도움이 되었어요.
+                                    </p>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <button class="btn btn-xs btn-ghost text-gray-500 hover:text-primary">
+                                            <i class="fas fa-thumbs-up mr-1"></i>
+                                            좋아요
+                                        </button>
+                                        <button class="btn btn-xs btn-ghost text-gray-500 hover:text-secondary" data-id="[[${comment.id}]]">
+                                            <i class="fas fa-reply mr-1"></i>
+                                            답글
+                                        </button>
+                                    </div>
+                                    <div class="flex-1" th:if="${#lists.size(comment.replies) > 0}">
+                                        <div th:each="reply : ${comment.replies}" th:insert="~{::commentFragment(comment=${reply})}"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </th:block>
                 </div>
                 
                 <!-- Empty Comments State -->
-                <div class="text-center py-8 text-gray-500">
+                <div class="text-center py-8 text-gray-500" th:unless="${comments}">
                     <i class="fas fa-comment text-4xl mb-3 text-gray-300"></i>
                     <p>아직 댓글이 없습니다.<br>첫 번째 댓글을 작성해보세요!</p>
                 </div>
@@ -220,17 +228,18 @@
                 <i class="fas fa-arrow-left mr-2"></i>
                 목록으로
             </button>
-            
-            <div class="flex gap-2">
-                <button class="btn btn-warning btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
-                    <i class="fas fa-edit mr-2"></i>
-                    수정
-                </button>
-                <button class="btn btn-error btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
-                    <i class="fas fa-trash mr-2"></i>
-                    삭제
-                </button>
-            </div>
+            <th:block th:if="${user == member}">
+                <div class="flex gap-2">
+                    <a th:href="@{post/update/{id}(id=${postId})}" class="btn btn-warning btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                        <i class="fas fa-edit mr-2"></i>
+                        수정
+                    </a>
+                    <button class="btn btn-error btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                        <i class="fas fa-trash mr-2"></i>
+                        삭제
+                    </button>
+                </div>
+            </th:block>
         </div>
     </div>
 
