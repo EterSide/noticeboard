@@ -16,10 +16,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Optional<Comment> findById(long id);
     Optional<List<Comment>> findByPost(Post post);
 
-    @Query("SELECT c FROM Comment c LEFT JOIN FETCH c.replies WHERE c.post.id = :postId AND c.parent IS NULL")
-    Optional<List<Comment>> findByPostIdWithReplies(@Param("postId") Long postId);
+    @Query("SELECT c FROM Comment c LEFT JOIN FETCH c.user WHERE c.post.id = :postId")
+    Optional<List<Comment>> findByPostIdWithUser(@Param("postId") Long postId);
 
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId")
     int countByPostId(@Param("postId") Long postId);
+
 
 }

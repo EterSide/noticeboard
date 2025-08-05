@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -38,9 +36,15 @@ public class CommentService {
         return commentRepository.findById(parentId);
     }
 
-    public Optional<List<Comment>> findByPost(Post post) {
+    public List<CommentDto> findByPost(Post post) {
+        Optional<List<Comment>> comments = commentRepository.findByPostIdWithUser(post.getId());
 
-        return commentRepository.findByPostIdWithReplies(post.getId());
+        if(comments.isPresent()) {
+            List<CommentDto> commentDtos = buildCommentDtoList(comments.get());
+            return commentDtos;
+        }
+
+        return null;
     }
 
     public int countByPost(Post post) {
@@ -50,5 +54,30 @@ public class CommentService {
     public void deleteComment(Comment comment) {
         commentRepository.delete(comment);
     }
+
+
+
+    public List<CommentDto> buildCommentDtoList(List<Comment> comments) {
+        Map<Long, CommentDto> commentDtoMap = new HashMap<>();
+        List<CommentDto> roots = new ArrayList<>();
+
+        for (Comment comment : comments) {
+            CommentDto commentDto = new CommentDto(comment);
+            commentDtoMap.put(comment.getId(), commentDto);
+        }
+
+        for(Comment comment : comments) {
+            CommentDto commentDto = commentDtoMap.get(comment.getId());
+
+            if(comment.getParent() != null) {
+                CommentDto parentCommentDto = commentDtoMap.get(comment.getParent().getId());
+                parentCommentDto.getReplies().add(commentDto);
+            } else {
+                roots.add(commentDto);
+            }
+        }
+        return roots;
+    }
+
 
 }

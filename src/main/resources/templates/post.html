@@ -156,7 +156,7 @@
                 </h3>
                 
                 <!-- Comment Form -->
-                <form action="#" th:action="@{/comment/add}" method="post">
+                <form th:action="@{/comment/add}" method="post">
                     <input type="hidden" th:value="${post.id}" name="postId">
                     <input type="hidden" th:value="0" name="parentId">
                     <div class="bg-gray-50 rounded-lg p-6 mb-6">
@@ -183,33 +183,89 @@
                             <div class="flex items-start gap-3">
                                 <div class="avatar placeholder">
                                     <div class="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-full w-8">
-                                        <span class="text-xs">U</span>
+                                        <span class="text-xs" th:text="${comment.nickname?.substring(0,1) ?: 'U'}">U</span>
                                     </div>
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-1">
-                                        <span class="font-semibold text-gray-700" th:text="${comment.user != null ? comment.user.nickname : '익명'}">사용자닉네임</span>
-                                        <span class="text-xs text-gray-500" th:text="${comment.createdAt}">2024-01-01 12:00</span>
+                                        <span class="font-semibold text-gray-700"th:text="${comment.nickname ?: '익명'}">사용자닉네임</span>
+<!--                                        <span class="text-xs text-gray-500" th:text="${comment.id}">2024-01-01 12:00</span>-->
                                     </div>
                                     <p class="text-gray-600 text-sm" th:text="${comment.content}">
                                         좋은 글 감사합니다! 많은 도움이 되었어요.
                                     </p>
                                     <div class="flex items-center gap-2 mt-2">
-                                        <button class="btn btn-xs btn-ghost text-gray-500 hover:text-primary">
-                                            <i class="fas fa-thumbs-up mr-1"></i>
-                                            좋아요
-                                        </button>
-                                        <button class="btn btn-xs btn-ghost text-gray-500 hover:text-secondary" data-id="[[${comment.id}]]">
+                                        <button class="reply-btn btn-xs btn-ghost text-gray-500 hover:text-primary" th:data-id="${comment.id}">
                                             <i class="fas fa-reply mr-1"></i>
                                             답글
                                         </button>
+                                        <button class="btn btn-xs btn-ghost text-gray-500 hover:text-secondary" th:data-id="${comment.id}">
+                                            <i class="fas fa-edit mr-1"></i>
+                                            수정
+                                        </button>
+                                        <button class="btn btn-xs btn-ghost text-gray-500 hover:text-danger" th:data-id="${comment.id}">
+                                            <i class="fas fa-delete mr-1"></i>
+                                            삭제
+                                        </button>
                                     </div>
+                                    <div class="reply-form-container" th:id="'reply-form-' + ${comment.id}" style="display: none;">
+                                        <div class="form-control">
+                                            <label class="label">
+                                                <span class="label-text font-semibold">댓글 작성</span>
+                                            </label>
+                                            <textarea class="reply-content textarea textarea-bordered h-24 resize-none" placeholder="댓글을 입력해주세요..." name="reply-content"></textarea>
+                                        </div>
+                                        <div class="flex justify-end mt-4">
+                                            <button class="submit-reply-btn btn-primary btn-sm bg-gradient-to-r from-purple-600 to-blue-600 border-none"  th:data-parent-id="${comment.id}">
+                                                <i class="fas fa-paper-plane mr-1"></i>
+                                                댓글 등록
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                                     <div class="flex-1" th:if="${#lists.size(comment.replies) > 0}">
-                                        <div th:each="reply : ${comment.replies}" th:insert="~{::commentFragment(comment=${reply})}"></div>
+                                        <div th:each="reply : ${comment.replies}">
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <span class="font-semibold text-gray-700"th:text="${comment.nickname ?: '익명'}">사용자닉네임</span>
+                                                    <!--                                        <span class="text-xs text-gray-500" th:text="${comment.id}">2024-01-01 12:00</span>-->
+                                                </div>
+                                                <p class="text-gray-600 text-sm" th:text="${comment.content}">
+                                                    좋은 글 감사합니다! 많은 도움이 되었어요.
+                                                </p>
+                                                <div class="flex items-center gap-2 mt-2">
+                                                    <button class="reply-btn btn-xs btn-ghost text-gray-500 hover:text-primary" th:data-id="${comment.id}">
+                                                        <i class="fas fa-reply mr-1"></i>
+                                                        답글
+                                                    </button>
+                                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-secondary" th:data-id="${comment.id}">
+                                                        <i class="fas fa-edit mr-1"></i>
+                                                        수정
+                                                    </button>
+                                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-danger" th:data-id="${comment.id}">
+                                                        <i class="fas fa-delete mr-1"></i>
+                                                        삭제
+                                                    </button>
+                                                </div>
+                                                <div class="reply-form-container" th:id="'reply-form-' + ${comment.id}" style="display: none;">
+                                                    <div class="form-control">
+                                                        <label class="label">
+                                                            <span class="label-text font-semibold">댓글 작성</span>
+                                                        </label>
+                                                        <textarea class="textarea textarea-bordered h-24 resize-none" placeholder="댓글을 입력해주세요..." name="reply-content"></textarea>
+                                                    </div>
+                                                    <div class="flex justify-end mt-4">
+                                                        <button class="submit-reply-btn btn-primary btn-sm bg-gradient-to-r from-purple-600 to-blue-600 border-none">
+                                                            <i class="fas fa-paper-plane mr-1"></i>
+                                                            댓글 등록
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                     </th:block>
                 </div>
                 
@@ -242,6 +298,40 @@
             </th:block>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.reply-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const parentId = btn.dataset.id;
+                    const replyForm = document.getElementById(`reply-form-${parentId}`);
+                    replyForm.style.display = (replyForm.style.display === 'none') ? 'block' : 'none';
+                });
+            });
+        });
+
+        document.querySelectorAll('.submit-reply-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const parentId = btn.dataset.parentId;
+                const textarea = document.querySelector(`#reply-form-${parentId} .reply-content`);
+                const content = textarea.value;
+
+                fetch('/comment/reply', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        parentId: parentId,
+                        content: content
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        location.reload(); // 또는 새 댓글만 추가하는 로직으로도 가능
+                    });
+            });
+        });
+
+
+    </script>
 
     <!-- Footer from fragments -->
     <div th:replace="fragments/footer :: footer"></div>

@@ -5,6 +5,7 @@ import com.example.noticeboard.entity.Image;
 import com.example.noticeboard.entity.Post;
 import com.example.noticeboard.entity.User;
 import com.example.noticeboard.entity.dto.CommentDto;
+import com.example.noticeboard.repository.CommentRepository;
 import com.example.noticeboard.service.CommentService;
 import com.example.noticeboard.service.FileService;
 import com.example.noticeboard.service.ImageService;
@@ -30,6 +31,7 @@ public class PostController {
     private final ImageService imageService;
     private final FileService fileService;
     private final CommentService commentService;
+    private final CommentRepository commentRepository;
 
     @GetMapping("posts")
     public String posts(Model model) {
@@ -88,7 +90,7 @@ public class PostController {
             model.addAttribute("post", postById.get());
             model.addAttribute("user", session.getAttribute("user"));
 
-            Optional<List<Comment>> comments = commentService.findByPost(postById.get());
+            List<CommentDto> comments = commentService.findByPost(postById.get());
             int count = commentService.countByPost(postById.get());
 
             Post post = postById.get();
@@ -96,11 +98,12 @@ public class PostController {
             postService.save(post);
 
             model.addAttribute("count", count);
-            comments.ifPresent(commentList -> model.addAttribute("comments", commentList));
+            model.addAttribute("comments", comments);
 
-            boolean isAuthor = user != null && user.getId().equals(postById.get().getUser().getId());
-
-            model.addAttribute("isAuthor", isAuthor);
+            if(post.getUser() != null) {
+                boolean isAuthor = user != null && user.getId().equals(postById.get().getUser().getId());
+                model.addAttribute("isAuthor", isAuthor);
+            }
 
             return "post";
         }
@@ -165,11 +168,14 @@ public class PostController {
 
         postById.ifPresent(post -> {
             List<Image> images = imageService.findByPost(post);
-            commentService.findByPost(post).ifPresent(comments -> {
-               for(Comment comment : comments) {
-                    commentService.deleteComment(comment);
-               }
-            });
+            List<CommentDto> comments = commentService.findByPost(post);
+
+            for (CommentDto c : comments) {
+
+                Optional<Comment> comment = commentService.findByParent(c.getId());
+                comment.ifPresent(commentService::deleteComment);
+
+            }
 
             for(Image image : images) {
                 image.setPost(null);
