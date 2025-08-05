@@ -223,21 +223,21 @@
 
         <!-- Navigation Buttons -->
         <div class="flex flex-wrap justify-between gap-4">
-            <button onclick="history.back()" 
+            <a th:href="@{/post/posts}"
                     class="btn btn-outline btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
                 <i class="fas fa-arrow-left mr-2"></i>
                 목록으로
-            </button>
+            </a>
             <th:block th:if="${isAuthor}">
                 <div class="flex gap-2">
-                    <a th:href="@{post/update/{id}(id=${postId})}" class="btn btn-warning btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                    <a th:href="@{/post/update/{id}(id=${post.getId()})}" class="btn btn-warning btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
                         <i class="fas fa-edit mr-2"></i>
                         수정
                     </a>
-                    <button class="btn btn-error btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                    <a th:href="@{/post/delete/{id}(id=${post.getId()})}" class="btn btn-error btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
                         <i class="fas fa-trash mr-2"></i>
                         삭제
-                    </button>
+                    </a>
                 </div>
             </th:block>
         </div>

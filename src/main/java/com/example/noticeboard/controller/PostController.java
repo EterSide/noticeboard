@@ -63,7 +63,6 @@ public class PostController {
         }
 
         Post save = postService.save(post);
-
         List<String> strings = fileService.extractImageSrcUrls(content);
         
         for(String str : strings) {
@@ -92,6 +91,10 @@ public class PostController {
             Optional<List<Comment>> comments = commentService.findByPost(postById.get());
             int count = commentService.countByPost(postById.get());
 
+            Post post = postById.get();
+            post.setViewCount(post.getViewCount() + 1);
+            postService.save(post);
+
             model.addAttribute("count", count);
             comments.ifPresent(commentList -> model.addAttribute("comments", commentList));
 
@@ -108,9 +111,77 @@ public class PostController {
     @GetMapping("update/{id}")
     public String update(@PathVariable Long id, Model model) {
 
+        Optional<Post> postById = postService.getPostById(id);
+        postById.ifPresent(post -> model.addAttribute("post", post));
+
         return "update_post";
     }
 
+    @PostMapping("update/{id}")
+    public String update(@PathVariable Long id, @RequestParam String title, @RequestParam String content, HttpSession session) {
+
+        Optional<Post> postById = postService.getPostById(id);
+
+        if(postById.isPresent()) {
+            Post post = postById.get();
+            post.setTitle(title);
+            post.setContent(content);
+            post.setUpdatedAt(LocalDateTime.now());
+            postService.save(post);
+            List<Image> imageUrls = imageService.findByPost(postById.get());
+
+            for(Image imageUrl : imageUrls) {
+                imageUrl.setPost(null);
+                imageService.save(imageUrl);
+            }
+
+
+        }
+
+        List<String> strings = fileService.extractImageSrcUrls(content);
+
+        for(String str : strings) {
+            if(imageService.findByUrl(str) != null && postById.isPresent()) {
+                System.out.println("추출된 URL: [" + str + "]");
+                Image byUrl = imageService.findByUrl(str);
+                byUrl.setPost(postById.get());
+                imageService.save(byUrl);
+            }
+        }
+
+        for(int i = 0; i < strings.size(); i++) {
+            String url = strings.get(i);
+
+        }
+
+
+        return "redirect:/post/" + id;
+    }
+
+    @GetMapping("delete/{id}")
+    public String delete(@PathVariable Long id, HttpSession session) {
+        Optional<Post> postById = postService.getPostById(id);
+        User user = (User) session.getAttribute("user");
+
+        postById.ifPresent(post -> {
+            List<Image> images = imageService.findByPost(post);
+            commentService.findByPost(post).ifPresent(comments -> {
+               for(Comment comment : comments) {
+                    commentService.deleteComment(comment);
+               }
+            });
+
+            for(Image image : images) {
+                image.setPost(null);
+                imageService.save(image);
+            }
+
+            postService.deletePostById(post.getId());
+        });
+
+        return "redirect:/post/posts";
+
+    }
 
 
 
