@@ -33,7 +33,7 @@ public class UserController {
         
 
         User saveUser = userService.save(user);
-        session.setAttribute("member", saveUser);
+        session.setAttribute("user", saveUser);
         return "redirect:/";
     }
 
@@ -48,7 +48,7 @@ public class UserController {
         Optional<User> login = userService.login(userId, password);
 
         if (login.isPresent()) {
-            session.setAttribute("member", login.get());
+            session.setAttribute("user", login.get());
             return "redirect:/";
         }
 

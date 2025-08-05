@@ -51,12 +51,16 @@ public class PostController {
     }
 
     @PostMapping("add")
-    public String add(@RequestParam String title, @RequestParam String content) {
+    public String add(@RequestParam String title, @RequestParam String content, HttpSession session) {
 
         Post post = new Post();
         post.setTitle(title);
         post.setContent(content);
         post.setCreatedAt(LocalDateTime.now());
+        if(session.getAttribute("user") != null) {
+            User user = (User) session.getAttribute("user");
+            post.setUser(user);
+        }
 
         Post save = postService.save(post);
 
@@ -78,42 +82,31 @@ public class PostController {
     public String post(Model model, @PathVariable Long id, HttpSession session) {
 
         Optional<Post> postById = postService.getPostById(id);
-        User member = (User) session.getAttribute("member");
-
-
-
-        if(member != null) {
-            model.addAttribute("user", member);
-        }
-
+        User user = (User) session.getAttribute("user");
 
 
         if(postById.isPresent()) {
-            model.addAttribute("postId", postById.get().getId());
-            model.addAttribute("title", postById.get().getTitle());
-            model.addAttribute("content", postById.get().getContent());
-            model.addAttribute("user", postById.get().getUser());
-            model.addAttribute("member", session.getAttribute("member"));
+            model.addAttribute("post", postById.get());
+            model.addAttribute("user", session.getAttribute("user"));
 
             Optional<List<Comment>> comments = commentService.findByPost(postById.get());
             int count = commentService.countByPost(postById.get());
 
             model.addAttribute("count", count);
+            comments.ifPresent(commentList -> model.addAttribute("comments", commentList));
 
-            model.addAttribute("comments", comments.get());
+            boolean isAuthor = user != null && user.getId().equals(postById.get().getUser().getId());
+
+            model.addAttribute("isAuthor", isAuthor);
 
             return "post";
         }
-
-
 
         return "";
     }
 
     @GetMapping("update/{id}")
     public String update(@PathVariable Long id, Model model) {
-
-
 
         return "update_post";
     }

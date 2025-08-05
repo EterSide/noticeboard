@@ -1,6 +1,7 @@
 package com.example.noticeboard.service;
 
 import com.example.noticeboard.entity.Post;
+import com.example.noticeboard.entity.User;
 import com.example.noticeboard.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,10 @@ public class PostService {
 
     public Optional<Post> getPostById(Long id) {
         return postRepository.findById(id);
+    }
+
+    public User findByIdWithPosts(Long id) {
+        return postRepository.findByIdWithPosts(id);
     }
 
     @Transactional
