@@ -45,10 +45,10 @@ public class UserController {
     @PostMapping("/login")
     public String login(@RequestParam String userId, @RequestParam String password, HttpSession session, Model model) {
 
-        Optional<User> login = userService.login(userId, password);
+        User login = userService.login(userId, password);
 
-        if (login.isPresent()) {
-            session.setAttribute("user", login.get());
+        if (login != null) {
+            session.setAttribute("user", login);
             return "redirect:/";
         }
 

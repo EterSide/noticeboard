@@ -10,14 +10,11 @@ import com.example.noticeboard.service.CommentService;
 import com.example.noticeboard.service.FileService;
 import com.example.noticeboard.service.ImageService;
 import com.example.noticeboard.service.PostService;
-import com.mysql.cj.Session;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -82,40 +79,34 @@ public class PostController {
     @GetMapping("{id}")
     public String post(Model model, @PathVariable Long id, HttpSession session) {
 
-        Optional<Post> postById = postService.getPostById(id);
+        Post post = postService.getPostById(id);
         User user = (User) session.getAttribute("user");
 
+        model.addAttribute("post", post);
+        model.addAttribute("user", session.getAttribute("user"));
 
-        if(postById.isPresent()) {
-            model.addAttribute("post", postById.get());
-            model.addAttribute("user", session.getAttribute("user"));
+        List<CommentDto> comments = commentService.findByPost(post);
+        int count = commentService.countByPost(post);
 
-            List<CommentDto> comments = commentService.findByPost(postById.get());
-            int count = commentService.countByPost(postById.get());
+        post.setViewCount(post.getViewCount() + 1);
+        postService.save(post);
 
-            Post post = postById.get();
-            post.setViewCount(post.getViewCount() + 1);
-            postService.save(post);
+        model.addAttribute("count", count);
+        model.addAttribute("comments", comments);
 
-            model.addAttribute("count", count);
-            model.addAttribute("comments", comments);
-
-            if(post.getUser() != null) {
-                boolean isAuthor = user != null && user.getId().equals(postById.get().getUser().getId());
-                model.addAttribute("isAuthor", isAuthor);
-            }
-
-            return "post";
+        if(post.getUser() != null) {
+            boolean isAuthor = user != null && user.getId().equals(post.getUser().getId());
+            model.addAttribute("isAuthor", isAuthor);
         }
 
-        return "";
+        return "post";
     }
 
     @GetMapping("update/{id}")
     public String update(@PathVariable Long id, Model model) {
 
-        Optional<Post> postById = postService.getPostById(id);
-        postById.ifPresent(post -> model.addAttribute("post", post));
+        Post post = postService.getPostById(id);
+        model.addAttribute("post", post);
 
         return "update_post";
     }
@@ -123,31 +114,26 @@ public class PostController {
     @PostMapping("update/{id}")
     public String update(@PathVariable Long id, @RequestParam String title, @RequestParam String content, HttpSession session) {
 
-        Optional<Post> postById = postService.getPostById(id);
+        Post post = postService.getPostById(id);
 
-        if(postById.isPresent()) {
-            Post post = postById.get();
-            post.setTitle(title);
-            post.setContent(content);
-            post.setUpdatedAt(LocalDateTime.now());
-            postService.save(post);
-            List<Image> imageUrls = imageService.findByPost(postById.get());
+        post.setTitle(title);
+        post.setContent(content);
+        post.setUpdatedAt(LocalDateTime.now());
+        postService.save(post);
+        List<Image> imageUrls = imageService.findByPost(post);
 
-            for(Image imageUrl : imageUrls) {
-                imageUrl.setPost(null);
-                imageService.save(imageUrl);
-            }
-
-
+        for(Image imageUrl : imageUrls) {
+            imageUrl.setPost(null);
+            imageService.save(imageUrl);
         }
 
         List<String> strings = fileService.extractImageSrcUrls(content);
 
         for(String str : strings) {
-            if(imageService.findByUrl(str) != null && postById.isPresent()) {
+            if(imageService.findByUrl(str) != null) {
                 System.out.println("추출된 URL: [" + str + "]");
                 Image byUrl = imageService.findByUrl(str);
-                byUrl.setPost(postById.get());
+                byUrl.setPost(post);
                 imageService.save(byUrl);
             }
         }
@@ -163,27 +149,25 @@ public class PostController {
 
     @GetMapping("delete/{id}")
     public String delete(@PathVariable Long id, HttpSession session) {
-        Optional<Post> postById = postService.getPostById(id);
+        Post post = postService.getPostById(id);
         User user = (User) session.getAttribute("user");
 
-        postById.ifPresent(post -> {
-            List<Image> images = imageService.findByPost(post);
-            List<CommentDto> comments = commentService.findByPost(post);
+        List<Image> images = imageService.findByPost(post);
+        List<CommentDto> comments = commentService.findByPost(post);
 
-            for (CommentDto c : comments) {
+        for (CommentDto c : comments) {
 
-                Optional<Comment> comment = commentService.findByParent(c.getId());
-                comment.ifPresent(commentService::deleteComment);
+            Comment comment = commentService.findByCommentId(c.getId());
+            commentService.deleteComment(comment);
 
-            }
+        }
 
-            for(Image image : images) {
-                image.setPost(null);
-                imageService.save(image);
-            }
+        for(Image image : images) {
+            image.setPost(null);
+            imageService.save(image);
+        }
 
-            postService.deletePostById(post.getId());
-        });
+        postService.deletePostById(post.getId());
 
         return "redirect:/post/posts";
 

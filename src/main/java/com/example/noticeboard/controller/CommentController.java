@@ -3,16 +3,14 @@ package com.example.noticeboard.controller;
 import com.example.noticeboard.entity.Comment;
 import com.example.noticeboard.entity.Post;
 import com.example.noticeboard.entity.User;
+import com.example.noticeboard.entity.dto.ReplyComment;
 import com.example.noticeboard.service.CommentService;
 import com.example.noticeboard.service.PostService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -31,11 +29,11 @@ public class CommentController {
         Comment comment = new Comment();
 
         comment.setContent(content);
-        Optional<Comment> byParent = commentService.findByParent(parentId);
-        Optional<Post> postById = postService.getPostById(postId);
+        Comment parentComment = commentService.findByCommentId(parentId);
+        Post post = postService.getPostById(postId);
 
-        byParent.ifPresent(comment::setParent);
-        postById.ifPresent(comment::setPost);
+        comment.setParent(parentComment);
+        comment.setPost(post);
 
         if(session.getAttribute("user") != null) {
             User user = (User) session.getAttribute("user");
@@ -49,12 +47,22 @@ public class CommentController {
 
     @PostMapping("reply")
     @ResponseBody
-    public ResponseEntity<?> replyComment(@RequestParam long parentId, @RequestParam String content, HttpSession session) {
+    public ResponseEntity<?> replyComment(@RequestBody ReplyComment replyComment, HttpSession session) {
+
+        System.out.println("대댓글 요청 발생");
+
+        User user = (User) session.getAttribute("user");
 
         Comment comment = new Comment();
-        comment.setContent(content);
-        comment.setParent(commentService.findByParent(parentId).get());
+        comment.setContent(replyComment.getContent());
+        Comment parentComment = commentService.findByCommentId(replyComment.getParentId());
+        comment.setParent(parentComment);
+        comment.setPost(postService.getPostById(replyComment.getPostId()));
+
         comment.setCreatedAt(LocalDateTime.now());
+        if(user != null) {
+            comment.setUser(user);
+        }
         commentService.addComment(comment);
 
         return ResponseEntity.ok().build();

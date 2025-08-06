@@ -32,8 +32,13 @@ public class UserService {
         return save;
     }
 
-    public Optional<User> login(String username, String password) {
-        return userRepository.findByUserIdAndPassword(username, password);
+    public User login(String username, String password) {
+
+        if(userRepository.findByUserIdAndPassword(username, password).isPresent()) {
+            return userRepository.findByUserIdAndPassword(username, password).get();
+        }
+
+        return null;
     }
 
     public void deleteUser(User user) {

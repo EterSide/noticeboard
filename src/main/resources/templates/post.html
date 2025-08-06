@@ -78,7 +78,7 @@
 <body class="gradient-bg min-h-screen">
     <!-- Navigation from fragments -->
     <div th:replace="fragments/header :: header"></div>
-
+    <input type="hidden" id="postId" th:value="${post.id}">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
         <!-- Header Section -->
         <div class="text-center mb-8">
@@ -177,95 +177,8 @@
 
                 <!-- Comments List -->
                 <div class="space-y-4">
-                    <!-- Sample Comment (will be replaced with actual comments) -->
                     <th:block th:if="${comments}" th:each="comment : ${comments}">
-                        <div class="border-b border-gray-100 pb-4 last:border-b-0">
-                            <div class="flex items-start gap-3">
-                                <div class="avatar placeholder">
-                                    <div class="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-full w-8">
-                                        <span class="text-xs" th:text="${comment.nickname?.substring(0,1) ?: 'U'}">U</span>
-                                    </div>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="font-semibold text-gray-700"th:text="${comment.nickname ?: '익명'}">사용자닉네임</span>
-<!--                                        <span class="text-xs text-gray-500" th:text="${comment.id}">2024-01-01 12:00</span>-->
-                                    </div>
-                                    <p class="text-gray-600 text-sm" th:text="${comment.content}">
-                                        좋은 글 감사합니다! 많은 도움이 되었어요.
-                                    </p>
-                                    <div class="flex items-center gap-2 mt-2">
-                                        <button class="reply-btn btn-xs btn-ghost text-gray-500 hover:text-primary" th:data-id="${comment.id}">
-                                            <i class="fas fa-reply mr-1"></i>
-                                            답글
-                                        </button>
-                                        <button class="btn btn-xs btn-ghost text-gray-500 hover:text-secondary" th:data-id="${comment.id}">
-                                            <i class="fas fa-edit mr-1"></i>
-                                            수정
-                                        </button>
-                                        <button class="btn btn-xs btn-ghost text-gray-500 hover:text-danger" th:data-id="${comment.id}">
-                                            <i class="fas fa-delete mr-1"></i>
-                                            삭제
-                                        </button>
-                                    </div>
-                                    <div class="reply-form-container" th:id="'reply-form-' + ${comment.id}" style="display: none;">
-                                        <div class="form-control">
-                                            <label class="label">
-                                                <span class="label-text font-semibold">댓글 작성</span>
-                                            </label>
-                                            <textarea class="reply-content textarea textarea-bordered h-24 resize-none" placeholder="댓글을 입력해주세요..." name="reply-content"></textarea>
-                                        </div>
-                                        <div class="flex justify-end mt-4">
-                                            <button class="submit-reply-btn btn-primary btn-sm bg-gradient-to-r from-purple-600 to-blue-600 border-none"  th:data-parent-id="${comment.id}">
-                                                <i class="fas fa-paper-plane mr-1"></i>
-                                                댓글 등록
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                    <div class="flex-1" th:if="${#lists.size(comment.replies) > 0}">
-                                        <div th:each="reply : ${comment.replies}">
-                                            <div class="flex-1">
-                                                <div class="flex items-center gap-2 mb-1">
-                                                    <span class="font-semibold text-gray-700"th:text="${comment.nickname ?: '익명'}">사용자닉네임</span>
-                                                    <!--                                        <span class="text-xs text-gray-500" th:text="${comment.id}">2024-01-01 12:00</span>-->
-                                                </div>
-                                                <p class="text-gray-600 text-sm" th:text="${comment.content}">
-                                                    좋은 글 감사합니다! 많은 도움이 되었어요.
-                                                </p>
-                                                <div class="flex items-center gap-2 mt-2">
-                                                    <button class="reply-btn btn-xs btn-ghost text-gray-500 hover:text-primary" th:data-id="${comment.id}">
-                                                        <i class="fas fa-reply mr-1"></i>
-                                                        답글
-                                                    </button>
-                                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-secondary" th:data-id="${comment.id}">
-                                                        <i class="fas fa-edit mr-1"></i>
-                                                        수정
-                                                    </button>
-                                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-danger" th:data-id="${comment.id}">
-                                                        <i class="fas fa-delete mr-1"></i>
-                                                        삭제
-                                                    </button>
-                                                </div>
-                                                <div class="reply-form-container" th:id="'reply-form-' + ${comment.id}" style="display: none;">
-                                                    <div class="form-control">
-                                                        <label class="label">
-                                                            <span class="label-text font-semibold">댓글 작성</span>
-                                                        </label>
-                                                        <textarea class="textarea textarea-bordered h-24 resize-none" placeholder="댓글을 입력해주세요..." name="reply-content"></textarea>
-                                                    </div>
-                                                    <div class="flex justify-end mt-4">
-                                                        <button class="submit-reply-btn btn-primary btn-sm bg-gradient-to-r from-purple-600 to-blue-600 border-none">
-                                                            <i class="fas fa-paper-plane mr-1"></i>
-                                                            댓글 등록
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <th:block th:replace="~{fragments/comment-thread :: comment(${comment})}"/>
                     </th:block>
                 </div>
                 
@@ -299,33 +212,68 @@
         </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.reply-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const parentId = btn.dataset.id;
-                    const replyForm = document.getElementById(`reply-form-${parentId}`);
+
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('.reply-btn')) {
+                const btn = event.target.closest('.reply-btn');
+                const parentId = btn.dataset.id;
+                console.log(parentId);
+                const replyForm = document.getElementById(`reply-form-${parentId}`);
+                if (replyForm) {
                     replyForm.style.display = (replyForm.style.display === 'none') ? 'block' : 'none';
-                });
-            });
+                }
+            }
         });
 
-        document.querySelectorAll('.submit-reply-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const parentId = btn.dataset.parentId;
-                const textarea = document.querySelector(`#reply-form-${parentId} .reply-content`);
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('.submit-reply-btn')) {
+                const btn = event.target.closest('.submit-reply-btn');
+                const container = btn.closest('.reply-form-container');
+                const textarea = container?.querySelector('.textarea, .reply-content');
+                const postId = document.querySelector('#postId').value;
+                if (!textarea) {
+                    console.error('⚠️ 댓글 입력 textarea를 찾을 수 없습니다!');
+                    return;
+                }
+
                 const content = textarea.value;
+                const parentId = btn.dataset.parentId;
+
+                console.log(parentId);
 
                 fetch('/comment/reply', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         parentId: parentId,
+                        postId: postId,
                         content: content
                     })
                 })
-                    .then(res => res.json())
+                    .then(res => {
+                        if (!res.ok) throw new Error('댓글 등록 실패');
+                        return res.json().catch(() => ({}));
+                    })
                     .then(data => {
-                        location.reload(); // 또는 새 댓글만 추가하는 로직으로도 가능
+                        location.reload();
+                    })
+                    .catch(err => {
+                        console.error('🚨 대댓글 등록 중 오류 발생:', err);
+                    });
+            }
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const commentId = btn.dataset.id;
+
+                fetch(`/comments/${commentId}/delete`, {
+                    method: 'POST'
+                })
+                    .then(() => {
+                        location.reload();
                     });
             });
         });

@@ -2,7 +2,6 @@ package com.example.noticeboard.service;
 
 import com.example.noticeboard.entity.Comment;
 import com.example.noticeboard.entity.Post;
-import com.example.noticeboard.entity.User;
 import com.example.noticeboard.entity.dto.CommentDto;
 import com.example.noticeboard.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,19 +31,29 @@ public class CommentService {
         return commentRepository.save(savedComment);
     }
 
-    public Optional<Comment> findByParent(long parentId) {
-        return commentRepository.findById(parentId);
+    public Comment findByParentId(Long parentId) {
+
+
+        if(commentRepository.findByParentId(parentId).isPresent()) {
+            return commentRepository.findByParentId(parentId).get();
+        }
+        return null;
+    }
+
+    public Comment findByCommentId(long commentId) {
+
+        if(commentRepository.findById(commentId).isPresent()) {
+            return commentRepository.findById(commentId).get();
+        }
+
+        return null;
     }
 
     public List<CommentDto> findByPost(Post post) {
         Optional<List<Comment>> comments = commentRepository.findByPostIdWithUser(post.getId());
 
-        if(comments.isPresent()) {
-            List<CommentDto> commentDtos = buildCommentDtoList(comments.get());
-            return commentDtos;
-        }
+        return comments.map(this::buildCommentDtoList).orElse(Collections.emptyList());
 
-        return null;
     }
 
     public int countByPost(Post post) {

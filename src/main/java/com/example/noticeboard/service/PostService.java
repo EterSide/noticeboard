@@ -20,8 +20,13 @@ public class PostService {
         return postRepository.findAll();
     }
 
-    public Optional<Post> getPostById(Long id) {
-        return postRepository.findById(id);
+    public Post getPostById(Long id) {
+
+        if(postRepository.findById(id).isPresent()) {
+            return postRepository.findById(id).get();
+        }
+
+        return null;
     }
 
     public User findByIdWithPosts(Long id) {
