@@ -1,6 +1,7 @@
 package com.example.noticeboard.service;
 
 import com.example.noticeboard.entity.Image;
+import com.example.noticeboard.entity.Post;
 import com.example.noticeboard.repository.ImageRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,14 @@ public class ImageService {
 
     public boolean deleteImageFile(String url) {
         return imageRepository.deleteByUrl(url);
+    }
+
+    public List<Image> findByPost(Post post) {
+        return imageRepository.findByPost(post);
+    }
+
+    public void deleteByImage(Image image) {
+        imageRepository.delete(image);
     }
 
 

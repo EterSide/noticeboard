@@ -78,7 +78,7 @@
 <body class="gradient-bg min-h-screen">
     <!-- Navigation from fragments -->
     <div th:replace="fragments/header :: header"></div>
-
+    <input type="hidden" id="postId" th:value="${post.id}">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
         <!-- Header Section -->
         <div class="text-center mb-8">
@@ -91,11 +91,11 @@
             <div class="flex flex-wrap justify-center gap-2 text-white/80">
                 <div class="badge badge-outline badge-lg">
                     <i class="fas fa-eye mr-1"></i>
-                    조회수 <span th:text="${viewCount ?: 0}">0</span>
+                    조회수 <span th:text="${post.viewCount ?: 0}">0</span>
                 </div>
                 <div class="badge badge-outline badge-lg">
                     <i class="fas fa-calendar-alt mr-1"></i>
-                    <span th:text="${#temporals.format(createdAt, 'yyyy-MM-dd')}">2024-01-01</span>
+                    <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}">2024-01-01</span>
                 </div>
             </div>
         </div>
@@ -105,20 +105,21 @@
             <div class="card-body p-8">
                 <!-- Post Header -->
                 <div class="border-b border-gray-200 pb-6 mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4" th:text="${title}">게시글 제목</h2>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4" th:text="${post.title}">게시글 제목</h2>
                     
                     <!-- Post Meta Info -->
+
                     <div class="flex flex-wrap items-center justify-between gap-4">
                         <div class="flex items-center gap-4 text-gray-600">
                             <div class="flex items-center gap-2">
                                 <div class="avatar placeholder">
                                     <div class="bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full w-10">
-                                        <span class="text-sm" th:text="${user?.nickname?.substring(0,1) ?: 'U'}">U</span>
+                                        <span class="text-sm" th:text="${post.user?.nickname?.substring(0,1) ?: 'U'}">U</span>
                                     </div>
                                 </div>
                                 <div>
-                                    <div class="font-semibold" th:text="${user?.nickname ?: '익명'}">작성자</div>
-                                    <div class="text-sm text-gray-500" th:text="${#temporals.format(createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</div>
+                                    <div class="font-semibold" th:text="${post.user?.nickname ?: '익명'}">작성자</div>
+                                    <div class="text-sm text-gray-500" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</div>
                                 </div>
                             </div>
                         </div>
@@ -139,7 +140,7 @@
 
                 <!-- Post Content -->
                 <div class="prose prose-lg max-w-none">
-                    <div id="post-content" th:utext="${content}">
+                    <div id="post-content" th:utext="${post.content}">
                         게시글 내용이 여기에 표시됩니다.
                     </div>
                 </div>
@@ -151,11 +152,13 @@
             <div class="card-body p-8">
                 <h3 class="text-2xl font-bold text-gray-800 mb-6">
                     <i class="fas fa-comments mr-2 text-purple-600"></i>
-                    댓글 <span class="text-lg text-gray-500">(0)</span>
+                    댓글 <span class="text-lg text-gray-500" th:text="${count}">(0)</span>
                 </h3>
                 
                 <!-- Comment Form -->
-                <form th:action="@{/comment}" method="post">
+                <form th:action="@{/comment/add}" method="post">
+                    <input type="hidden" th:value="${post.id}" name="postId">
+                    <input type="hidden" th:value="0" name="parentId">
                     <div class="bg-gray-50 rounded-lg p-6 mb-6">
                         <div class="form-control">
                             <label class="label">
@@ -164,7 +167,7 @@
                             <textarea class="textarea textarea-bordered h-24 resize-none" placeholder="댓글을 입력해주세요..." name="content"></textarea>
                         </div>
                         <div class="flex justify-end mt-4">
-                            <button type="submit" class="btn btn-primary btn-sm bg-gradient-to-r from-purple-600 to-blue-600 border-none">
+                            <button class="btn btn-primary btn-sm bg-gradient-to-r from-purple-600 to-blue-600 border-none">
                                 <i class="fas fa-paper-plane mr-1"></i>
                                 댓글 등록
                             </button>
@@ -173,69 +176,14 @@
                 </form>
 
                 <!-- Comments List -->
-                <!-- 📌 댓글 목록 루프: 최상위 댓글만 반복 -->
-                <div th:each="comment : ${comments}" class="comment-block" style="margin-bottom: 20px;">
-
-                    <!-- ① 댓글 작성자 -->
-                    <p><strong th:text="${comment.user?.nickname ?: 'ㅇㅇ'}">작성자</strong></p>
-
-                    <!-- ② 댓글 내용 -->
-                    <p th:text="${comment.displayContent}">댓글 내용</p>
-
-                    <!-- ③ 대댓글 작성 폼 토글 버튼 -->
-                    <button type="button" th:attr="onclick='toggleReplyForm(' + ${comment.id} + ')'">답글</button>
-
-                    <!-- ④ 대댓글 작성 폼 (기본은 숨김 상태) -->
-                    <form th:id="'reply-form-' + ${comment.id}" th:action="@{/comments/reply}" method="post" style="display: none; margin-top: 10px;">
-                        <input type="hidden" name="postId" th:value="${post.id}" />
-                        <input type="hidden" name="parentId" th:value="${comment.id}" />
-                        <textarea name="content" placeholder="답글을 입력하세요" rows="2" style="width: 100%;"></textarea>
-                        <button type="submit">답글 등록</button>
-                    </form>
-
-                    <!-- ⑤ 대댓글 목록 루프 -->
-                    <div th:if="${#lists.size(comment.replies) > 0}" style="margin-left: 20px; margin-top: 10px;">
-                        <div th:each="reply : ${comment.replies}" class="reply-block" style="border-left: 2px solid #ccc; padding-left: 10px; margin-bottom: 10px;">
-                            <p><strong th:text="${reply.user?.nickname ?: 'ㅇㅇ'}">작성자</strong></p>
-                            <p th:text="${reply.displayContent}">대댓글 내용</p>
-                        </div>
-                    </div>
-
+                <div class="space-y-4">
+                    <th:block th:if="${comments}" th:each="comment : ${comments}">
+                        <th:block th:replace="~{fragments/comment-thread :: comment(${comment})}"/>
+                    </th:block>
                 </div>
-<!--                <div class="space-y-4">-->
-<!--                    &lt;!&ndash; Sample Comment (will be replaced with actual comments) &ndash;&gt;-->
-<!--                    <div class="border-b border-gray-100 pb-4 last:border-b-0">-->
-<!--                        <div class="flex items-start gap-3">-->
-<!--                            <div class="avatar placeholder">-->
-<!--                                <div class="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-full w-8">-->
-<!--                                    <span class="text-xs">U</span>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                            <div class="flex-1" th:each="comment : ${comments}">-->
-<!--                                <div class="flex items-center gap-2 mb-1">-->
-<!--                                    <span class="font-semibold text-gray-700" th:text="${comment.userId}">사용자닉네임</span>-->
-<!--                                    <span class="text-xs text-gray-500" th:text="${comment.creatAt}">2024-01-01 12:00</span>-->
-<!--                                </div>-->
-<!--                                <p class="text-gray-600 text-sm" th:text="${comment.content}">-->
-<!--                                    좋은 글 감사합니다! 많은 도움이 되었어요.-->
-<!--                                </p>-->
-<!--                                <div class="flex items-center gap-2 mt-2">-->
-<!--                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-primary">-->
-<!--                                        <i class="fas fa-thumbs-up mr-1"></i>-->
-<!--                                        좋아요-->
-<!--                                    </button>-->
-<!--                                    <button class="btn btn-xs btn-ghost text-gray-500 hover:text-secondary">-->
-<!--                                        <i class="fas fa-reply mr-1"></i>-->
-<!--                                        답글-->
-<!--                                    </button>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
                 
                 <!-- Empty Comments State -->
-                <div class="text-center py-8 text-gray-500">
+                <div class="text-center py-8 text-gray-500" th:unless="${comments}">
                     <i class="fas fa-comment text-4xl mb-3 text-gray-300"></i>
                     <p>아직 댓글이 없습니다.<br>첫 번째 댓글을 작성해보세요!</p>
                 </div>
@@ -244,25 +192,94 @@
 
         <!-- Navigation Buttons -->
         <div class="flex flex-wrap justify-between gap-4">
-            <button onclick="history.back()" 
+            <a th:href="@{/post/posts}"
                     class="btn btn-outline btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
                 <i class="fas fa-arrow-left mr-2"></i>
                 목록으로
-            </button>
-            <div th:if="${!session.isEmpty()}">
+            </a>
+            <th:block th:if="${isAuthor}">
                 <div class="flex gap-2">
-                    <button class="btn btn-warning btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                    <a th:href="@{/post/update/{id}(id=${post.getId()})}" class="btn btn-warning btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
                         <i class="fas fa-edit mr-2"></i>
                         수정
-                    </button>
-                    <button class="btn btn-error btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                    </a>
+                    <a th:href="@{/post/delete/{id}(id=${post.getId()})}" class="btn btn-error btn-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
                         <i class="fas fa-trash mr-2"></i>
                         삭제
-                    </button>
+                    </a>
                 </div>
-            </div>
+            </th:block>
         </div>
     </div>
+    <script>
+
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('.reply-btn')) {
+                const btn = event.target.closest('.reply-btn');
+                const parentId = btn.dataset.id;
+                console.log(parentId);
+                const replyForm = document.getElementById(`reply-form-${parentId}`);
+                if (replyForm) {
+                    replyForm.style.display = (replyForm.style.display === 'none') ? 'block' : 'none';
+                }
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('.submit-reply-btn')) {
+                const btn = event.target.closest('.submit-reply-btn');
+                const container = btn.closest('.reply-form-container');
+                const textarea = container?.querySelector('.textarea, .reply-content');
+                const postId = document.querySelector('#postId').value;
+                if (!textarea) {
+                    console.error('⚠️ 댓글 입력 textarea를 찾을 수 없습니다!');
+                    return;
+                }
+
+                const content = textarea.value;
+                const parentId = btn.dataset.parentId;
+
+                console.log(parentId);
+
+                fetch('/comment/reply', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        parentId: parentId,
+                        postId: postId,
+                        content: content
+                    })
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error('댓글 등록 실패');
+                        return res.json().catch(() => ({}));
+                    })
+                    .then(data => {
+                        location.reload();
+                    })
+                    .catch(err => {
+                        console.error('🚨 대댓글 등록 중 오류 발생:', err);
+                    });
+            }
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const commentId = btn.dataset.id;
+
+                fetch(`/comments/${commentId}/delete`, {
+                    method: 'POST'
+                })
+                    .then(() => {
+                        location.reload();
+                    });
+            });
+        });
+
+
+    </script>
 
     <!-- Footer from fragments -->
     <div th:replace="fragments/footer :: footer"></div>
