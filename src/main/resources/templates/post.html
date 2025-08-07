@@ -73,6 +73,75 @@
             overflow-x: auto;
             margin: 1.5rem 0;
         }
+        
+        /* 댓글 및 대댓글 스타일링 */
+        .comment-item {
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+        
+        .comment-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(103, 126, 234, 0.1), 0 4px 10px -3px rgba(103, 126, 234, 0.05);
+        }
+        
+        /* 대댓글 컨테이너 스타일링 */
+        .reply-container {
+            position: relative;
+            border-left: 3px solid transparent;
+            background: linear-gradient(to bottom, #ddd6fe, #bfdbfe) border-box;
+            background-clip: padding-box;
+        }
+        
+        .reply-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -3px;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(to bottom, #8b5cf6, #3b82f6);
+        }
+        
+        /* 대댓글 아이템 스타일링 */
+        .reply-item {
+            border-left: 2px solid #e5e7eb;
+            margin-left: -1.5rem;
+            padding-left: 1rem;
+        }
+        
+        .reply-item .comment-item {
+            background: linear-gradient(135deg, #faf5ff 0%, #eff6ff 100%);
+            border: 1px solid #e0e7ff;
+            margin-bottom: 0.75rem;
+            padding: 1rem 1.5rem;
+        }
+        
+        .reply-item .comment-item:hover {
+            background: linear-gradient(135deg, #f3e8ff 0%, #dbeafe 100%);
+            border-color: #c7d2fe;
+        }
+        
+        /* 깊은 대댓글을 위한 추가 스타일링 */
+        .reply-container .reply-container {
+            margin-left: 1rem;
+            border-left-width: 2px;
+        }
+        
+        .reply-container .reply-container::before {
+            width: 2px;
+            background: linear-gradient(to bottom, #a78bfa, #60a5fa);
+        }
+        
+        /* 답글 폼 스타일링 개선 */
+        .reply-form-container {
+            margin-top: 1rem;
+        }
+        
+        .reply-form-container .bg-gray-50 {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+        }
     </style>
 </head>
 <body class="gradient-bg min-h-screen">
@@ -257,6 +326,11 @@
                         return res.json().catch(() => ({}));
                     })
                     .then(data => {
+                        // 댓글 입력 필드 초기화
+                        textarea.value = '';
+                        container.style.display = 'none';
+                        
+                        // 페이지 새로고침으로 업데이트된 댓글 목록 표시
                         location.reload();
                     })
                     .catch(err => {

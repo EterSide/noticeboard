@@ -1,24 +1,71 @@
 
 <!-- fragments/comment-thread.html -->
 <th:block th:fragment="comment(comment)">
-  <div class="ml-4 border-l border-gray-300 pl-4">
-    <div class="font-bold text-sm text-gray-800" th:text="${comment.nickname ?: '익명'}"></div>
-    <p class="text-gray-600 text-sm" th:text="${comment.content}">내용</p>
-
-    <div class="flex items-center gap-2 mt-1">
-      <button class="reply-btn btn-xs" th:data-id="${comment.id}">답글</button>
+  <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-4 comment-item card-hover">
+    <!-- Comment Header -->
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="avatar placeholder">
+          <div class="bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full w-10">
+            <span class="text-sm" th:text="${comment.nickname?.substring(0,1) ?: 'U'}">U</span>
+          </div>
+        </div>
+        <div>
+          <div class="font-semibold text-gray-800" th:text="${comment.nickname ?: '익명'}">익명</div>
+          <div class="text-sm text-gray-500">
+            <span th:if="${comment.createdAt != null}" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</span>
+            <span th:unless="${comment.createdAt != null}">날짜 정보 없음</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Comment Actions -->
+      <div class="flex items-center gap-2">
+        <button class="reply-btn btn btn-ghost btn-xs text-purple-600 hover:bg-purple-50" th:data-id="${comment.id}">
+          <i class="fas fa-reply mr-1"></i>
+          답글
+        </button>
+      </div>
     </div>
 
+    <!-- Comment Content -->
+    <div class="prose prose-sm max-w-none mb-4">
+      <p class="text-gray-700 leading-relaxed" th:text="${comment.content}">내용</p>
+    </div>
+
+    <!-- Reply Form -->
     <div class="reply-form-container" th:id="'reply-form-' + ${comment.id}" style="display:none;">
-      <textarea class="reply-content" name="reply-content"></textarea>
-      <button class="submit-reply-btn btn-sm" th:data-parent-id="${comment.id}">등록</button>
+      <div class="bg-gray-50 rounded-lg p-4 mt-4 border border-gray-200">
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text text-sm font-medium text-gray-700">답글 작성</span>
+          </label>
+          <textarea class="reply-content textarea textarea-bordered textarea-sm resize-none" 
+                    rows="3" 
+                    placeholder="답글을 입력해주세요..." 
+                    name="reply-content"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 mt-3">
+          <button class="btn btn-ghost btn-sm" onclick="this.closest('.reply-form-container').style.display='none'">
+            취소
+          </button>
+          <button class="submit-reply-btn btn btn-primary btn-sm bg-gradient-to-r from-purple-600 to-blue-600 border-none" th:data-parent-id="${comment.id}">
+            <i class="fas fa-paper-plane mr-1"></i>
+            등록
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 🌀 재귀적으로 replies 출력 -->
-    <div th:if="${#lists.size(comment.replies) > 0}">
-      <th:block th:each="child : ${comment.replies}">
-        <th:block th:replace="~{fragments/comment-thread :: comment(${child})}"/>
-      </th:block>
+    <div th:if="${#lists.size(comment.replies) > 0}" class="mt-6">
+      <div class="ml-8 pl-6 space-y-4 reply-container">
+        <th:block th:each="child : ${comment.replies}">
+          <div class="reply-item">
+            <th:block th:replace="~{fragments/comment-thread :: comment(${child})}"/>
+          </div>
+        </th:block>
+      </div>
     </div>
   </div>
 </th:block>
