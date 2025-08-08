@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -66,6 +67,34 @@ public class CommentController {
         commentService.addComment(comment);
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{commentid}/edit")
+    public ResponseEntity<?> editComment(@RequestBody ReplyComment replyComment, @PathVariable Long commentid, HttpSession session) throws AccessDeniedException {
+        
+        System.out.println("댓글 수정 요청 발생");
+
+        User user = (User) session.getAttribute("user");
+
+        commentService.updateContent(commentid, replyComment.getContent(), user.getId());
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{commentId}/delete")
+    public ResponseEntity<?> deleteComment(@PathVariable Long commentId, HttpSession session) throws AccessDeniedException {
+
+        User user = (User) session.getAttribute("user");
+
+        Comment comment = commentService.findByCommentId(commentId);
+
+        comment.setIsDeleted(true);
+        comment.setDeletedReason("");
+
+        commentService.deleteComment(commentId, user.getId(), false);
+
+        return ResponseEntity.ok().build();
+
     }
 
 }

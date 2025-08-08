@@ -145,6 +145,78 @@
     </style>
 </head>
 <body class="gradient-bg min-h-screen">
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const commentContainer = document.querySelector('#comments-container'); // 실제 댓글을 감싸는 div id로 수정해줘
+
+        if (!commentContainer) return;
+
+        commentContainer.addEventListener('click', async (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+
+            // 삭제 버튼
+            if (target.classList.contains('delete-btn')) {
+                const commentId = target.dataset.id;
+
+                if (confirm('정말 삭제하시겠습니까?')) {
+                    try {
+                        const res = await fetch(`/comment/${commentId}/delete`, { method: 'POST' });
+                        if (res.ok) {
+                            location.reload(); // 또는 댓글 DOM만 지워도 됨
+                        } else {
+                            alert('삭제에 실패했습니다.');
+                        }
+                    } catch (err) {
+                        console.error('❌ 삭제 에러:', err);
+                    }
+                }
+            }
+
+            // 수정 버튼
+            else if (target.classList.contains('edit-btn')) {
+                const commentId = target.dataset.id;
+
+                // 수정할 요소 찾기 (내용 있는 곳)
+                const commentBox = target.closest('.comment-item');
+                const contentP = commentBox.querySelector('p');
+                const originalContent = contentP.textContent;
+
+                // 입력창으로 교체
+                const textarea = document.createElement('textarea');
+                textarea.className = 'textarea textarea-sm w-full';
+                textarea.value = originalContent;
+                contentP.replaceWith(textarea);
+
+                // 버튼을 "저장"으로 변경
+                target.textContent = '저장';
+                target.classList.remove('edit-btn');
+                target.classList.add('save-edit-btn');
+
+                // 저장 클릭 시 처리
+                target.addEventListener('click', async function saveHandler() {
+                    const updatedContent = textarea.value;
+
+                    try {
+                        const res = await fetch(`/comment/${commentId}/edit`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ content: updatedContent })
+                        });
+
+                        if (res.ok) {
+                            location.reload(); // 새로고침 or DOM 업데이트
+                        } else {
+                            alert('수정 실패');
+                        }
+                    } catch (err) {
+                        console.error('❌ 수정 에러:', err);
+                    }
+                }, { once: true }); // 한 번만 실행되도록
+            }
+        });
+    });
+</script>
     <!-- Navigation from fragments -->
     <div th:replace="fragments/header :: header"></div>
     <input type="hidden" id="postId" th:value="${post.id}">
@@ -245,7 +317,7 @@
                 </form>
 
                 <!-- Comments List -->
-                <div class="space-y-4">
+                <div class="space-y-4" id="comments-container">
                     <th:block th:if="${comments}" th:each="comment : ${comments}">
                         <th:block th:replace="~{fragments/comment-thread :: comment(${comment})}"/>
                     </th:block>
@@ -338,20 +410,6 @@
                     });
             }
         });
-
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const commentId = btn.dataset.id;
-
-                fetch(`/comments/${commentId}/delete`, {
-                    method: 'POST'
-                })
-                    .then(() => {
-                        location.reload();
-                    });
-            });
-        });
-
 
     </script>
 

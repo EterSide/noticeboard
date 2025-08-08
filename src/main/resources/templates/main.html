@@ -58,7 +58,7 @@
                 <!-- Feature Cards -->
                 <div class="grid md:grid-cols-3 gap-6 mt-12">
                     <!-- 로그인하지 않은 사용자용 카드들 -->
-                    <div th:if="${session.member == null}">
+                    <div th:if="${session.user == null}">
                         <!-- 회원가입 카드 -->
                         <div class="card bg-base-100 shadow-2xl card-hover backdrop-blur-sm bg-white/95">
                             <div class="card-body text-center">
@@ -103,7 +103,7 @@
                     </div>
 
                     <!-- 로그인한 사용자용 카드들 -->
-                    <div th:if="${session.member != null}">
+                    <div th:if="${session.user != null}">
                         <!-- 게시글 작성 카드 -->
                         <div class="card bg-base-100 shadow-2xl card-hover backdrop-blur-sm bg-white/95">
                             <div class="card-body text-center">
@@ -133,7 +133,7 @@
                                 </div>
                                 <h2 class="card-title justify-center text-2xl font-bold mb-3">내 정보</h2>
                                 <p class="text-base-content/70 mb-6">
-                                    <span th:text="${session.member?.nickname} ?: '사용자'">사용자</span>님의 정보를<br>
+                                    <span th:text="${session.user?.nickname} ?: '사용자'">사용자</span>님의 정보를<br>
                                     확인하고 수정해보세요
                                 </p>
                                 <div class="card-actions justify-center">
